@@ -36,6 +36,19 @@ namespace Files.App.Data.Items
             }
         }
 
+        public static EncodingItem[] Defaults { get; set; } = new string?[] {
+			null,//System Default
+			"UTF-8",
+			"shift_jis",
+			"gb2312",
+			"big5",
+			"ks_c_5601-1987",
+			"Windows-1252",
+			"macintosh",
+		}
+			.Select(x=>new EncodingItem(x))
+			.ToArray();
+        
         public override string ToString() => Name;
     }
 }

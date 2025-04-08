@@ -53,18 +53,7 @@ namespace Files.App.ViewModels.Dialogs
 
 		public DisposableArray? Password { get; private set; }
 
-		public EncodingItem[] EncodingOptions { get; set; } = new string?[] {
-			null,//System Default
-			"UTF-8",
-			"shift_jis",
-			"gb2312",
-			"big5",
-			"ks_c_5601-1987",
-			"Windows-1252",
-			"macintosh",
-		}
-			.Select(x=>new EncodingItem(x))
-			.ToArray();
+		public EncodingItem[] EncodingOptions { get; set; } = EncodingItem.Defaults;
 		public EncodingItem SelectedEncoding { get; set; }
 
 		public IRelayCommand PrimaryButtonClickCommand { get; private set; }

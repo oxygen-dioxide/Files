@@ -8,8 +8,10 @@
 	xmlns:converters="using:Files.App.Converters"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:helpers="using:Files.App.Helpers"
+	xmlns:items="using:Files.App.Data.Items"
 	xmlns:local="using:Files.App.UserControls"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:uc="using:Files.App.UserControls"
 	xmlns:wctconverters="using:CommunityToolkit.WinUI.Converters"
 	DataContext="{x:Bind ViewModel, Mode=OneWay}"
 	mc:Ignorable="d">
@@ -498,6 +500,28 @@
 			x:Name="BaseCommandBar"
 			Grid.Column="1"
 			DefaultLabelPosition="Right">
+
+			<!--  Zip Encoding  -->
+			<AppBarButton
+				x:Name="ZipEncodingOptions"
+				Width="Auto"
+				MinWidth="40"
+				Label="Zip Encoding"
+				LabelPosition="Default"
+				x:Load="{x:Bind ViewModel.InstanceViewModel.IsPageTypeZipFolder, Mode=OneWay, FallbackValue=False}"
+				AutomationProperties.Name="{helpers:ResourceString Name=ZipEncodingOptions}"
+				Style="{StaticResource ToolBarAppBarButtonFlyoutStyle}"
+				ToolTipService.ToolTip="{helpers:ResourceString Name=ZipEncodingOptions}">
+				<AppBarButton.Flyout>
+					<MenuFlyout 
+						x:Name="ZipEncodingList"
+						Opening="ZipEncodingList_Opening"
+						Placement="Bottom">
+						
+					</MenuFlyout>
+				</AppBarButton.Flyout>
+
+			</AppBarButton>
 
 			<!--  Selection Commands  -->
 			<AppBarButton

@@ -83,6 +83,25 @@ namespace Files.App.UserControls
 			}
 		}
 
+		private void ZipEncodingList_Opening(object sender, object e)
+		{
+			ZipEncodingList.Items.Clear();
+			var encodingItems = EncodingItem.Defaults;
+			ushort key = 0;
+			string keyFormat = $"D{encodingItems.Length.ToString().Length}";
+			foreach (var encodingItem in EncodingItem.Defaults)
+			{
+				MenuFlyoutItem menuLayoutItem = new MenuFlyoutItem()
+				{
+					Text = encodingItem.Name,
+					Tag = "SelectZipEncoding"
+				};
+				menuLayoutItem.AccessKey = (encodingItems.Length + 1 - (++key)).ToString(keyFormat);
+				menuLayoutItem.Command = ViewModel.SelectZipEncodingCommand;
+				menuLayoutItem.CommandParameter = encodingItem.Encoding;
+				ZipEncodingList.Items.Insert(0, menuLayoutItem);
+			}
+		}
 		private void SortGroup_AccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
 		{
 			if (sender is MenuFlyoutSubItem menu)

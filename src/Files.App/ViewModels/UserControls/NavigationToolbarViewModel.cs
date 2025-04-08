@@ -84,6 +84,9 @@ namespace Files.App.ViewModels.UserControls
 		public bool IsInfFile => SelectedItems is not null && SelectedItems.Count == 1 && FileExtensionHelpers.IsInfFile(SelectedItems.First().FileExtension) && !InstanceViewModel.IsPageTypeRecycleBin;
 		public bool IsFont => SelectedItems is not null && SelectedItems.Any() && SelectedItems.All(x => FileExtensionHelpers.IsFontFile(x.FileExtension)) && !InstanceViewModel.IsPageTypeRecycleBin;
 
+		public EncodingItem[] EncodingOptions { get; set; } = EncodingItem.Defaults;
+		public string SelectedEncodingName { get; set; }
+
 		public bool IsCardsLayout => _InstanceViewModel.FolderSettings.LayoutMode is FolderLayoutModes.CardsView;
 		public bool IsColumnLayout => _InstanceViewModel.FolderSettings.LayoutMode is FolderLayoutModes.ColumnView;
 		public bool IsGridLayout => _InstanceViewModel.FolderSettings.LayoutMode is FolderLayoutModes.GridView;
@@ -258,6 +261,7 @@ namespace Files.App.ViewModels.UserControls
 
 		public IAsyncRelayCommand? OpenNewWindowCommand { get; set; }
 		public ICommand? CreateNewFileCommand { get; set; }
+		public ICommand? SelectZipEncodingCommand { get; set; }
 		public ICommand? Share { get; set; }
 		public ICommand? UpdateCommand { get; set; }
 
@@ -317,6 +321,7 @@ namespace Files.App.ViewModels.UserControls
 						break;
 				}
 			};
+			SelectedEncodingName = "Encoding";
 		}
 
 		// Methods
