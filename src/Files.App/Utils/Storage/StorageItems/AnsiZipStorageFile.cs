@@ -1,7 +1,10 @@
+
+using Files.Shared.Helpers;
+using ICSharpCode.SharpZipLib.Core;
 using ICSharpCode.SharpZipLib.Zip;
 using SevenZip;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using Windows.Foundation;
 using Windows.Storage;
@@ -9,7 +12,6 @@ using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
 using Windows.Win32;
 using IO = System.IO;
-using Windows.Win32.System.Variant;
 
 namespace Files.App.Utils.Storage
 {
@@ -425,19 +427,38 @@ namespace Files.App.Utils.Storage
 			return async request =>
 			{
                 try
-				{
+                {
                     using ZipFile zipFile = await OpenZipFileAsync();
                     if (zipFile is null)
-					{
-						request.FailAndClose(StreamedFileFailureMode.CurrentlyUnavailable);
-						return;
-					}
-                    //TODO
+                    {
+                        request.FailAndClose(StreamedFileFailureMode.CurrentlyUnavailable);
+                        return;
+                    }
+					//zipFile.IsStreamOwner = true;
+					//var entry = zipFile.ArchiveFileData.FirstOrDefault(x => System.IO.Path.Combine(containerPath, x.FileName) == name);
+					var entry = zipFile.GetEntry(System.IO.Path.GetRelativePath(containerPath, name));
+                    if (entry is null)
+                    {
+                        request.FailAndClose(StreamedFileFailureMode.CurrentlyUnavailable);
+                    }
+                    else
+                    {
+                        await using (var outStream = request.AsStreamForWrite())
+                        {
+							var buffer = new byte[4096];
+							using (var zipStream = zipFile.GetInputStream(entry))
+							{
+								StreamUtils.Copy(zipStream, outStream, buffer);
+							}
+
+						}
+                        request.Dispose();
+                    }
                 }
                 catch
-				{
-					request.FailAndClose(StreamedFileFailureMode.Failed);
-				}
+                {
+                    request.FailAndClose(StreamedFileFailureMode.Failed);
+                }
             }
         }
     }
