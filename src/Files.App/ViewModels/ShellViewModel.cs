@@ -1357,7 +1357,7 @@ namespace Files.App.ViewModels
 			if (item.SyncStatusUI.LoadSyncStatus)
 				return false;
 
-			return WindowsSecurityService.IsElevationRequired(item.IsShortcut ? ((ShortcutItem)item).TargetPath : item.ItemPath);
+			return WindowsSecurityService.IsElevationRequired(item.IsShortcut ? ((IShortcutItem)item).TargetPath : item.ItemPath);
 		}
 
 		public async Task LoadGitPropertiesAsync(IGitItem gitItem)
@@ -1634,12 +1634,22 @@ namespace Files.App.ViewModels
 				!isMtp &&
 				!isShellFolder &&
 				!isWslDistro;
+			bool isNetdisk = false;
+	
+			try
+			{
+				// Special handling for network drives
+				if (!isNetwork)
+					isNetdisk = (new DriveInfo(path).DriveType == System.IO.DriveType.Network);
+			}
+			catch { }
+ 			
 			bool isFtp = FtpHelpers.IsFtpPath(path);
 			bool enumFromStorageFolder = isBoxFolder || isFtp;
 
 			BaseStorageFolder? rootFolder = null;
 
-			if (isNetwork)
+			if (isNetwork || isNetdisk)
 			{
 				var auth = await NetworkService.AuthenticateNetworkShare(path);
 				if (!auth)

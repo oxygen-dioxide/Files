@@ -123,6 +123,9 @@
   <data name="CopyPath" xml:space="preserve">
     <value>Copiar ruta</value>
   </data>
+  <data name="CopyItemPath" xml:space="preserve">
+    <value>Copiar ruta del elemento</value>
+  </data>
   <data name="CopyPathWithQuotes" xml:space="preserve">
     <value>Copiar la ruta entre comillas</value>
   </data>
@@ -214,7 +217,7 @@
     <value>Mostrar archivos y carpetas ocultos</value>
   </data>
   <data name="ShowDotFiles" xml:space="preserve">
-    <value>Mostrar archivos que comienzan con un punto</value>
+    <value>Archivos de punto</value>
   </data>
   <data name="Appearance" xml:space="preserve">
     <value>Apariencia</value>
@@ -1086,10 +1089,13 @@
     <value>Mostrar/Ocultar panel de información</value>
   </data>
   <data name="ToggleInfoPaneDescription" xml:space="preserve">
-    <value>Mostrar/Ocultar panel de información para ver paneles detalles/vista previa</value>
+    <value>Toggle visibility of the detail/preview panes</value>
   </data>
   <data name="ToggleToolbar" xml:space="preserve">
     <value>Mostrar/Ocultar barra de herramientas</value>
+  </data>
+  <data name="ToggleToolbarDescription" xml:space="preserve">
+    <value>Cambiar la visibilidad de la barra de herramientas</value>
   </data>
   <data name="DetailsPanePreviewNotAvaliableText" xml:space="preserve">
     <value>No hay vista previa disponible</value>
@@ -1254,22 +1260,22 @@
     <value>Copiar</value>
   </data>
   <data name="CopyItemsDialogTitle" xml:space="preserve">
-    <value>Copia {0, plural, one {elemento} other {elementos}}</value>
+    <value>Copiar {0, plural, one {elemento} other {elementos}}</value>
   </data>
   <data name="DeleteItemsDialogTitle" xml:space="preserve">
-    <value>Elimina {0, plural, one {elemento} other {elementos}}</value>
+    <value>Eliminar {0, plural, one {elemento} other {elementos}}</value>
   </data>
   <data name="MoveItemsDialogPrimaryButtonText" xml:space="preserve">
     <value>Mover</value>
   </data>
   <data name="MoveItemsDialogSubtitle" xml:space="preserve">
-    <value>{0, plural, one {Un elemento será movido} other {# elementos serán movidos}}</value>
+    <value>{0, plural, one {Se moverá un elemento} other {Se moverán # elementos}}</value>
   </data>
   <data name="MoveItemsDialogTitle" xml:space="preserve">
-    <value>Mueve {0, plural, one {elemento} other {elementos}}</value>
+    <value>Mover {0, plural, one {elemento} other {elementos}}</value>
   </data>
   <data name="DeleteItemsDialogSubtitle" xml:space="preserve">
-    <value>{0, plural, one {Un elemento será eliminado} other {# elementos serán eliminados}}</value>
+    <value>{0, plural, one {Se eliminará un elemento} other {Se eliminarán # elementos}}</value>
   </data>
   <data name="ConflictingItemsDialogPrimaryButtonText" xml:space="preserve">
     <value>Continuar</value>
@@ -1281,10 +1287,10 @@
     <value>{0, plural, one {Hay un nombre de archivo en conflicto} other {Hay # nombres de archivo en conflicto}}, y {1, plural, one {un elemento saliente} other {# elementos salientes}}</value>
   </data>
   <data name="ConflictingItemsDialogTitle" xml:space="preserve">
-    <value>Conflicto {0, plural, one {elemento} other {elementos}}</value>
+    <value>En conflicto {0, plural, one {nombre de archivo} other {nombres de archivo}}</value>
   </data>
   <data name="CopyItemsDialogSubtitle" xml:space="preserve">
-    <value>{0, plural, one {Un elemento será copiado} other {# elementos serán copiados}}</value>
+    <value>{0, plural, one {Se copiará un elemento} other {Se copiarán # elementos}}</value>
   </data>
   <data name="DeleteItemsDialogPermanentlyDeleteCheckBox.Content" xml:space="preserve">
     <value>Eliminar permanentemente</value>
@@ -1392,7 +1398,7 @@
     <value>{0} elementos</value>
   </data>
   <data name="ReopenClosedTab" xml:space="preserve">
-    <value>Volver a abrir pestaña cerrada</value>
+    <value>Volver a abrir la pestaña</value>
   </data>
   <data name="Rename" xml:space="preserve">
     <value>Cambiar nombre</value>
@@ -1599,7 +1605,7 @@
     <value>Reemplazar todas las entradas de permisos de los objetos secundarios con entradas de permisos heredables de este objeto</value>
   </data>
   <data name="CloseActivePane" xml:space="preserve">
-    <value>Cerrar panel activo</value>
+    <value>Cerrar panel</value>
   </data>
   <data name="EnterCompactOverlay" xml:space="preserve">
     <value>Entrar en superposición compacta</value>
@@ -2073,7 +2079,7 @@
     <value>Restaurar todos los elementos</value>
   </data>
   <data name="ConfirmRestoreSelectionBinDialogContent" xml:space="preserve">
-    <value>¿Desea restaurar los elemento(s) {0} seleccionado(s)?</value>
+    <value>¿Desea restaurar {0, plural, one {el elemento seleccionado} other {{0} elementos seleccionados}}?</value>
   </data>
   <data name="ConfirmRestoreSelectionBinDialogTitle" xml:space="preserve">
     <value>Restaurar selección</value>
@@ -2095,6 +2101,12 @@
   </data>
   <data name="ArchivePassword" xml:space="preserve">
     <value>Contraseña de archivo</value>
+  </data>
+  <data name="Encoding" xml:space="preserve">
+    <value>Codificación</value>
+  </data>
+  <data name="EncodingDetected" xml:space="preserve">
+    <value>{0} (detectado)</value>
   </data>
   <data name="ExtractToPath" xml:space="preserve">
     <value>Ruta</value>
@@ -2138,7 +2150,7 @@
   <data name="SplittingSize" xml:space="preserve">
     <value>Tamaño de la división</value>
   </data>
-  <data name="Do not split" xml:space="preserve">
+  <data name="DoNotSplit" xml:space="preserve">
     <value>No dividir</value>
   </data>
   <data name="CD" xml:space="preserve">
@@ -2195,11 +2207,14 @@
   <data name="EditSettingsFile" xml:space="preserve">
     <value>Editar archivo de configuración</value>
   </data>
-  <data name="WhatsNew" xml:space="preserve">
-    <value>Novedades</value>
+  <data name="EditSettingsFileDescription" xml:space="preserve">
+    <value>Abrir archivo de configuración en el editor predeterminado</value>
   </data>
-  <data name="WhatsNewDescription" xml:space="preserve">
-    <value>Abrir notas de la versión</value>
+  <data name="ReleaseNotes" xml:space="preserve">
+    <value>Notas de la versión</value>
+  </data>
+  <data name="ReleaseNotesDescription" xml:space="preserve">
+    <value>Abre notas de la versión</value>
   </data>
   <data name="CannotCreateShortcutDialogTitle" xml:space="preserve">
     <value>Crear un acceso directo en esta ubicación requiere privilegios de administrador</value>
@@ -2280,10 +2295,7 @@
     <value>Opciones del menú contextual</value>
   </data>
   <data name="ShowFileExtensions" xml:space="preserve">
-    <value>Mostrar extensiones</value>
-  </data>
-  <data name="ShowHiddenItems" xml:space="preserve">
-    <value>Mostrar elementos ocultos</value>
+    <value>Extensiones de archivo</value>
   </data>
   <data name="FormatDriveText" xml:space="preserve">
     <value>Formatear</value>
@@ -2292,13 +2304,13 @@
     <value>Ayuda</value>
   </data>
   <data name="FullScreen" xml:space="preserve">
-    <value>Entrar/Salir de pantalla completa</value>
+    <value>Pantalla completa</value>
   </data>
   <data name="ConfirmDeleteTag" xml:space="preserve">
     <value>¿Está seguro que desea eliminar esta etiqueta?</value>
   </data>
   <data name="PlayAll" xml:space="preserve">
-    <value>Reproducir todo</value>
+    <value>Reproducir</value>
   </data>
   <data name="Height" xml:space="preserve">
     <value>Alto</value>
@@ -2358,7 +2370,7 @@
     <value>Aumentar tamaño</value>
   </data>
   <data name="ToggleSortDirection" xml:space="preserve">
-    <value>Cambiar el sentido de la clasificación</value>
+    <value>Sentido de la clasificación</value>
   </data>
   <data name="InvalidTagNameWarning" xml:space="preserve">
     <value>Nombre no válido</value>
@@ -2370,13 +2382,13 @@
     <value>Vídeos</value>
   </data>
   <data name="LaunchPreviewPopup" xml:space="preserve">
-    <value>Abrir vista previa emergente</value>
+    <value>Vista previa emergente</value>
   </data>
   <data name="ToggleCompactOverlay" xml:space="preserve">
     <value>Entrar/Salir de superposición compacta</value>
   </data>
   <data name="OpenHelpDescription" xml:space="preserve">
-    <value>Abrir la página de ayuda en línea en el navegador</value>
+    <value>Abrir la página de ayuda en línea en su navegador</value>
   </data>
   <data name="ToggleFullScreenDescription" xml:space="preserve">
     <value>Entrar/Salir de pantalla completa</value>
@@ -2391,16 +2403,16 @@
     <value>Entrar/Salir de superposición compacta</value>
   </data>
   <data name="SearchDescription" xml:space="preserve">
-    <value>Ir al cuadro de búsqueda</value>
+    <value>Iniciar búsqueda en la barra unificada (omnibar)</value>
   </data>
   <data name="ToggleShowHiddenItemsDescription" xml:space="preserve">
-    <value>Mostrar/Ocultar elementos ocultos</value>
+    <value>Cambiar la visibilidad de los elementos ocultos</value>
   </data>
   <data name="ToggleDotFilesSettingDescription" xml:space="preserve">
-    <value>Mostrar/Ocultar archivos de puntos</value>
+    <value>Cambiar la visibilidad de los archivos de puntos</value>
   </data>
   <data name="ToggleShowFileExtensionsDescription" xml:space="preserve">
-    <value>Mostrar/Ocultar las extensiones de archivos</value>
+    <value>Cambiar la visibilidad de las extensiones de archivo</value>
   </data>
   <data name="TogglePreviewPaneDescription" xml:space="preserve">
     <value>Mostrar panel de vista previa para ver la vista previa del archivo</value>
@@ -2409,61 +2421,64 @@
     <value>Mostrar/Ocultar barra lateral</value>
   </data>
   <data name="CopyItemDescription" xml:space="preserve">
-    <value>Copiar elemento(s) al portapapeles</value>
+    <value>Copy selected {0, plural, one {item} other {items}}</value>
   </data>
   <data name="CopyPathDescription" xml:space="preserve">
-    <value>Copiar la ruta del directorio actual al portapapeles</value>
+    <value>Copy path of the current directory</value>
   </data>
   <data name="CopyItemPathDescription" xml:space="preserve">
-    <value>Copiar la ruta de los elementos seleccionados al portapapeles</value>
+    <value>Copy path of selected items</value>
   </data>
   <data name="CopyItemPathWithQuotesDescription" xml:space="preserve">
-    <value>Copiar entre comillas la ruta de los elementos seleccionados al portapapeles</value>
+    <value>Copy path of selected items with quotes</value>
   </data>
   <data name="CopyPathWithQuotesDescription" xml:space="preserve">
-    <value>Copiar entre comillas la ruta del directorio actual al portapapeles</value>
+    <value>Copy path of the current directory with quotes</value>
   </data>
   <data name="CutItemDescription" xml:space="preserve">
-    <value>Cortar elemento(s) al portapapeles</value>
+    <value>Cut selected {0, plural, one {item} other {items}}</value>
   </data>
   <data name="PasteItemDescription" xml:space="preserve">
-    <value>Pegar elemento(s) del portapapeles en la carpeta actual</value>
+    <value>Paste items to the current folder</value>
   </data>
   <data name="PasteShortcutDescription" xml:space="preserve">
-    <value>Pegar elemento(s) del portapapeles a la carpeta actual como accesos directos</value>
+    <value>Paste items to the current folder as shortcuts</value>
   </data>
   <data name="PasteItemToSelectionDescription" xml:space="preserve">
-    <value>Pegar elemento(s) del portapapeles en la carpeta seleccionada</value>
+    <value>Paste items to the selected folder</value>
+  </data>
+  <data name="PasteToSelectedFolder" xml:space="preserve">
+    <value>Pegar a la carpeta seleccionada</value>
   </data>
   <data name="DeleteItemDescription" xml:space="preserve">
-    <value>Eliminar elemento(s)</value>
+    <value>Eliminar {0, plural, one {elemento seleccionado} other {elementos seleccionados}}</value>
   </data>
   <data name="CreateFolderDescription" xml:space="preserve">
     <value>Crear nueva carpeta</value>
   </data>
   <data name="CreateShortcutDescription" xml:space="preserve">
-    <value>Crear nuevo(s) acceso(s) directo(s) para elemento(s) seleccionado(s)</value>
+    <value>Crea {0, plural, one {nuevo acceso directo} other {nuevos accesos directos}} para {0, plural, one {elemento seleccionado} other {elementos seleccionados}}</value>
   </data>
   <data name="CreateShortcutFromDialogDescription" xml:space="preserve">
     <value>Crear nuevo acceso directo para cualquier elemento</value>
   </data>
   <data name="EmptyRecycleBinDescription" xml:space="preserve">
-    <value>Vaciar papelera de reciclaje</value>
+    <value>Vaciar el contenido de la papelera de reciclaje</value>
   </data>
   <data name="FormatDriveDescription" xml:space="preserve">
     <value>Abrir el menú "Formatear unidad" para el elemento seleccionado</value>
   </data>
   <data name="RestoreRecycleBinDescription" xml:space="preserve">
-    <value>Restaurar elemento(s) seleccionado(s) de la papelera de reciclaje</value>
+    <value>Restaura {0, plural, one {elemento seleccionado} other {elementos seleccionados}} desde la papelera de reciclaje</value>
   </data>
   <data name="RestoreAllRecycleBinDescription" xml:space="preserve">
     <value>Restaurar todos los elementos de la papelera de reciclaje</value>
   </data>
   <data name="OpenItemDescription" xml:space="preserve">
-    <value>Abrir elemento(s)</value>
+    <value>Abre {0, plural, one {elemento} other {elementos}}</value>
   </data>
   <data name="OpenItemWithApplicationPickerDescription" xml:space="preserve">
-    <value>Abrir elemento(s) con la aplicación seleccionada</value>
+    <value>Abre {0, plural, one {elemento} other {elementos}} con la aplicación seleccionada</value>
   </data>
   <data name="OpenParentFolderDescription" xml:space="preserve">
     <value>Abrir la carpeta contenedora del elemento buscado</value>
@@ -2478,28 +2493,28 @@
     <value>Seleccionar todos los elementos</value>
   </data>
   <data name="InvertSelectionDescription" xml:space="preserve">
-    <value>Invertir selección de elementos</value>
+    <value>Invertir elementos seleccionados</value>
   </data>
   <data name="ClearSelectionDescription" xml:space="preserve">
-    <value>Limpiar selección de elementos</value>
+    <value>Borrar elementos seleccionados</value>
   </data>
   <data name="ToggleSelectDescription" xml:space="preserve">
     <value>Seleccionar/No selecionar elemento</value>
   </data>
   <data name="ShareItemDescription" xml:space="preserve">
-    <value>Compartir archivo(s) seleccionado(s) con otros</value>
+    <value>Comparte {0, plural, one {archivo seleccionado} other {archivos seleccionados}} con otros</value>
   </data>
   <data name="PinToStartDescription" xml:space="preserve">
-    <value>Anclar elemento(s) al menú Inicio</value>
+    <value>Ancla {0, plural, one {elemento} other {elementos}} al Menú Inicio</value>
   </data>
   <data name="UnpinFromStartDescription" xml:space="preserve">
-    <value>Desanclar elemento(s) del menú Inicio</value>
+    <value>Desanclar {0, plural, one {elemento} other {elementos}} del Menú Inicio</value>
   </data>
   <data name="PinFolderToSidebarDescription" xml:space="preserve">
-    <value>Anclar carpeta(s) en la barra lateral</value>
+    <value>Ancla {0, plural, one {carpeta} other {carpetas}} a la Barra lateral</value>
   </data>
   <data name="UnpinFolderFromSidebarDescription" xml:space="preserve">
-    <value>Desanclar carpeta(s) de la barra lateral</value>
+    <value>Desancla {0, plural, one {carpeta} other {carpetas}} de la Barra lateral</value>
   </data>
   <data name="SetAsWallpaperBackgroundDescription" xml:space="preserve">
     <value>Establecer imagen seleccionada como fondo de escritorio</value>
@@ -2513,14 +2528,23 @@
   <data name="SetAsAppBackgroundDescription" xml:space="preserve">
     <value>Establecer imagen seleccionada como fondo de la aplicación</value>
   </data>
+  <data name="InstallFont" xml:space="preserve">
+    <value>Instalar fuente</value>
+  </data>
+  <data name="InstallDriver" xml:space="preserve">
+    <value>Instalar controlador</value>
+  </data>
+  <data name="InstallCertificate" xml:space="preserve">
+    <value>Instalar certificado</value>
+  </data>
   <data name="InstallFontDescription" xml:space="preserve">
-    <value>Instalar fuente(s) seleccionada(s)</value>
+    <value>Instala {0, plural, one {fuente seleccionada} other {fuentes seleccionadas}}</value>
   </data>
   <data name="InstallInfDriverDescription" xml:space="preserve">
-    <value>Instalar controlador(es) usando archivo(s) inf seleccionado(s)</value>
+    <value>Instala {0, plural, one {controlador} other {controladores}} utilizando {0, plural, one {archivo inf seleccionado} other {archivos inf seleccionados}}</value>
   </data>
   <data name="InstallCertificateDescription" xml:space="preserve">
-    <value>Instalar certificado(s) seleccionado(s)</value>
+    <value>Instala {0, plural, one {certificado seleccionado} other {certificados seleccionados}}</value>
   </data>
   <data name="RunAsAdminDescription" xml:space="preserve">
     <value>Ejecutar como administrador la aplicación seleccionada</value>
@@ -2535,28 +2559,28 @@
     <value>Abrir vista previa en ventana emergente</value>
   </data>
   <data name="CompressIntoArchiveDescription" xml:space="preserve">
-    <value>Crear archivo con elemento(s) seleccionado(s)</value>
+    <value>Crea archivo con {0, plural, one {elemento seleccionado} other {elementos seleccionados}}</value>
   </data>
   <data name="CompressIntoSevenZipDescription" xml:space="preserve">
-    <value>Crear directamente archivo 7z con elemento(s) seleccionado(s)</value>
+    <value>Crea archivo 7z con {0, plural, one {elemento seleccionado} other {elementos seleccionados}}</value>
   </data>
   <data name="CompressIntoZipDescription" xml:space="preserve">
-    <value>Crear directamente archivo zip con elemento(s) seleccionado(s)</value>
+    <value>Crea archivo zip con {0, plural, one {elemento seleccionado} other {elementos seleccionados}}</value>
   </data>
   <data name="DecompressArchiveDescription" xml:space="preserve">
-    <value>Extraer elementos desde archivo(s) seleccionado(s) en cualquier carpeta</value>
+    <value>Extract selected {0, plural, one {archive} other {archives}} to any folder</value>
   </data>
   <data name="DecompressArchiveHereDescription" xml:space="preserve">
-    <value>Extraer elementos desde archivo(s) seleccionado(s) en carpeta actual</value>
+    <value>Extract selected {0, plural, one {archive} other {archives}} to the current folder</value>
   </data>
   <data name="DecompressArchiveToChildFolderDescription" xml:space="preserve">
-    <value>Extraer elementos desde archivo(s) seleccionado(s) en nueva carpeta</value>
+    <value>Extract selected {0, plural, one {archive} other {archives}} to new folder</value>
   </data>
   <data name="RotateLeftDescription" xml:space="preserve">
-    <value>Girar imagen(imágenes) seleccionada(s) a la izquierda</value>
+    <value>Gira {0, plural, one {imagen seleccionada} other {imágenes seleccionadas}} a la izquierda</value>
   </data>
   <data name="RotateRightDescription" xml:space="preserve">
-    <value>Girar imagen(imágenes) seleccionada(s) a la derecha</value>
+    <value>Gira {0, plural, one {imagen seleccionada} other {imágenes seleccionadas}} a la derecha</value>
   </data>
   <data name="OpenSettingsDescription" xml:space="preserve">
     <value>Abrir página de configuración</value>
@@ -2676,13 +2700,13 @@
     <value>Cambiar sentido de ordenación de grupos</value>
   </data>
   <data name="NewTabDescription" xml:space="preserve">
-    <value>Abrir nueva pestaña</value>
+    <value>Abrir una nueva pestaña</value>
   </data>
   <data name="NavigateBackDescription" xml:space="preserve">
-    <value>Navegar hacia atrás en el historial de navegación</value>
+    <value>Navegar hacia atrás</value>
   </data>
   <data name="NavigateForwardDescription" xml:space="preserve">
-    <value>Navegar hacia adelante en el historial de navegación</value>
+    <value>Navegar hacia adelante</value>
   </data>
   <data name="NavigateUpDescription" xml:space="preserve">
     <value>Subir un directorio</value>
@@ -2715,7 +2739,7 @@
     <value>Cerrar todas las pestañas incluyendo la actual</value>
   </data>
   <data name="ReopenClosedTabDescription" xml:space="preserve">
-    <value>Reabrir última pestaña cerrada</value>
+    <value>Reabrir la pestaña recientemente cerrada</value>
   </data>
   <data name="PreviousTabDescription" xml:space="preserve">
     <value>Mover a la pestaña anterior</value>
@@ -2733,7 +2757,7 @@
     <value>Enfocar otro panel</value>
   </data>
   <data name="FocusOtherPaneDescription" xml:space="preserve">
-    <value>Cambia el foco al panel no activo</value>
+    <value>Cambiar foco al otro panel</value>
   </data>
   <data name="ToggleSidebar" xml:space="preserve">
     <value>Mostrar/Ocultar barra lateral</value>
@@ -2941,13 +2965,13 @@
     <value>Sin etiquetar</value>
   </data>
   <data name="PreviousTab" xml:space="preserve">
-    <value>Mover a la pestaña anterior</value>
+    <value>Pestaña anterior</value>
   </data>
   <data name="NextTab" xml:space="preserve">
-    <value>Mover a la siguiente pestaña</value>
+    <value>Pestaña siguiente</value>
   </data>
   <data name="CloseTab" xml:space="preserve">
-    <value>Cerrar la pestaña actual</value>
+    <value>Cerrar pestaña</value>
   </data>
   <data name="EditPath" xml:space="preserve">
     <value>Editar ruta</value>
@@ -2977,7 +3001,7 @@
     <value>Mostrar casillas de verificación al seleccionar elementos</value>
   </data>
   <data name="EditPathDescription" xml:space="preserve">
-    <value>Enfocar la barra de ruta</value>
+    <value>Editar ruta en la barra unificada (omnibar)</value>
   </data>
   <data name="AddItemDescription" xml:space="preserve">
     <value>Crear nuevo elemento</value>
@@ -2992,7 +3016,7 @@
     <value>Eliminar permanentemente</value>
   </data>
   <data name="DeleteItemPermanentlyDescription" xml:space="preserve">
-    <value>Eliminar elemento(s) permanentemente</value>
+    <value>Eliminar {0, plural, one {elemento seleccionado} other {elementos seleccionados}} permanentemente</value>
   </data>
   <data name="PlayAllDescription" xml:space="preserve">
     <value>Reproducir los archivos multimedia seleccionados</value>
@@ -3109,10 +3133,10 @@
     <value>Cambiar a nueva rama</value>
   </data>
   <data name="CreateFolderWithSelectionDescription" xml:space="preserve">
-    <value>Crear una carpeta con elemento(s) actualmente seleccionado(s)</value>
+    <value>Crea una carpeta con {0, plural, one {elemento seleccionado} other {elementos seleccionados}} actualmente</value>
   </data>
   <data name="OpenProperties" xml:space="preserve">
-    <value>Abrir propiedades</value>
+    <value>Propiedades</value>
   </data>
   <data name="OpenClassicProperties" xml:space="preserve">
     <value>Abrir las propiedades del Explorador de archivos</value>
@@ -3257,7 +3281,7 @@
     <value>Inicializar repositorio</value>
   </data>
   <data name="InitRepoDescription" xml:space="preserve">
-    <value>Inicializar un repositorio Git</value>
+    <value>Inicializar la carpeta actual como repositorio git</value>
   </data>
   <data name="GitOriginRepositoryName" xml:space="preserve">
     <value>Nombre del repositorio remoto</value>
@@ -3272,13 +3296,13 @@
     <value>Ordenar elementos por ruta</value>
   </data>
   <data name="OpenDirectoryInNewPaneDescription" xml:space="preserve">
-    <value>Abrir directorio en nuevo panel</value>
+    <value>Abrir directorio seleccionado en un nuevo panel</value>
   </data>
   <data name="OpenDirectoryInNewTabDescription" xml:space="preserve">
-    <value>Abrir directorio en nueva pestaña</value>
+    <value>Abrir directorio seleccionado en una nueva pestaña</value>
   </data>
   <data name="OpenInNewWindowDescription" xml:space="preserve">
-    <value>Abrir directorio en nueva ventana</value>
+    <value>Abrir directorio seleccionado en una ventana nueva</value>
   </data>
   <data name="OpenAllTaggedItems" xml:space="preserve">
     <value>Abrir todo</value>
@@ -3303,10 +3327,10 @@
     <value>El comando '{0}' no está listo para ser ejecutado.</value>
   </data>
   <data name="CommandPalette" xml:space="preserve">
-    <value>Paleta de comandos</value>
+    <value>Paleta de Comandos</value>
   </data>
   <data name="OpenCommandPaletteDescription" xml:space="preserve">
-    <value>Abrir paleta de comandos</value>
+    <value>Abrir paleta de comandos en la barra unificada (omnibar)</value>
   </data>
   <data name="ShortcutItemWorkingDir" xml:space="preserve">
     <value>Iniciar en:</value>
@@ -3502,7 +3526,7 @@
   <data name="StatusCenter_GitCloneInProgress_SubHeader" xml:space="preserve">
     <value>Clonando {0} de "{1}" a "{2}"</value>
     <comment>Shown in a StatusCenter card.</comment>
-  </data>	
+  </data>
   <data name="StatusCenter_InstallFontCanceled_Header" xml:space="preserve">
     <value>Cancelada la instalación de {0} fuentes</value>
     <comment>Shown in a StatusCenter card.</comment>
@@ -3534,7 +3558,7 @@
   <data name="StatusCenter_InstallFontInProgress_SubHeader" xml:space="preserve">
     <value>Instalando {0} fuente(s) desde "{1}"</value>
     <comment>Shown in a StatusCenter card.</comment>
-  </data>	
+  </data>
   <data name="StatusCenter_CopyCanceled_Header" xml:space="preserve">
     <value>Cancelada la copia de {0} elemento(s) en "{1}"</value>
     <comment>Shown in a StatusCenter card.</comment>
@@ -3676,7 +3700,7 @@
     <comment>Shown in a StatusCenter card.</comment>
   </data>
   <data name="StatusCenter_ProcessedItems_Header" xml:space="preserve">
-    <value>{0}/{1} elemento(s) procesado(s)</value>
+    <value>{0}/{1} {0, plural, one {elemento procesado} other {elementos procesados}}</value>
     <comment>Shown in a StatusCenter card. Used as "8/20 items processed"</comment>
   </data>
   <data name="UnblockDownloadedFile" xml:space="preserve">
@@ -3693,6 +3717,9 @@
   </data>
   <data name="FailedToSetBackground" xml:space="preserve">
     <value>No se ha podido establecer el fondo de escritorio</value>
+  </data>
+  <data name="FailedToOpenSettingsFile" xml:space="preserve">
+    <value>No se pudo abrir el archivo de configuración</value>
   </data>
   <data name="GitDeleteBranch" xml:space="preserve">
     <value>Eliminar rama de Git</value>
@@ -3719,7 +3746,7 @@
     <value>Se ha producido un error al aplicar esta etiqueta</value>
   </data>
   <data name="DecompressArchiveHereSmartDescription" xml:space="preserve">
-    <value>Extraer elementos desde archivo(s) seleccionado(s) a la carpeta actual para archivo de un solo elemento, o a una nueva carpeta para archivo de varios elementos</value>
+    <value>Extract selected {0, plural, one {archive} other {archives}} here for single-item or to new folder for multi-item</value>
   </data>
   <data name="ExtractHereSmart" xml:space="preserve">
     <value>Extraer aquí (Inteligente)</value>
@@ -3728,7 +3755,7 @@
     <value>Ordenar archivos y carpetas a la vez</value>
   </data>
   <data name="SortFilesAndFoldersTogetherDescription" xml:space="preserve">
-    <value>Ordenar archivos y carpetas a la vez</value>
+    <value>Ordenar archivos y carpetas en la misma lista</value>
   </data>
   <data name="SortFilesFirst" xml:space="preserve">
     <value>Ordenar con archivos al principio</value>
@@ -3989,16 +4016,16 @@
     <value>Menú de acciones de pestaña</value>
   </data>
   <data name="AddVerticalPane" xml:space="preserve">
-    <value>Añadir panel vertical</value>
+    <value>Panel vertical</value>
   </data>
   <data name="AddVerticalPaneDescription" xml:space="preserve">
-    <value>Añadir un panel vertical</value>
+    <value>Añadir panel vertical</value>
   </data>
   <data name="AddHorizontalPane" xml:space="preserve">
-    <value>Añadir panel horizontal</value>
+    <value>Panel horizontal</value>
   </data>
   <data name="AddHorizontalPaneDescription" xml:space="preserve">
-    <value>Añadir un panel horizontal</value>
+    <value>Añadir panel horizontal</value>
   </data>
   <data name="ArrangePanesVertically" xml:space="preserve">
     <value>Organizar verticalmente</value>
@@ -4061,7 +4088,7 @@
     <value>Crear flujo de datos alternativos</value>
   </data>
   <data name="CreateAlternateDataStreamDescription" xml:space="preserve">
-    <value>Crear flujo de datos alternativos para elemento(s) seleccionado(s)</value>
+    <value>Crea flujo de datos alternativo para {0, plural, one {elemento seleccionado} other {elementos seleccionados}}</value>
   </data>
   <data name="EnterDataStreamName" xml:space="preserve">
     <value>Introducir nombre de flujo de datos</value>
@@ -4091,7 +4118,7 @@
     <value>Cambiar siempre el foco a la pestaña recién creada</value>
   </data>
   <data name="ToggleShelfPane" xml:space="preserve">
-    <value>Mostrar/Ocultar el panel estante</value>
+    <value>Mostrar/Ocultar panel estante</value>
   </data>
   <data name="ToggleShelfPaneDescription" xml:space="preserve">
     <value>Cambiar la visibilidad del panel estante</value>
@@ -4112,6 +4139,18 @@
   <data name="AddToShelf" xml:space="preserve">
     <value>Añadir al estante</value>
     <comment>Tooltip that displays when dragging items to the Shelf Pane</comment>
+  </data>
+  <data name="EnterHashToCompare" xml:space="preserve">
+    <value>Introducir un hash para comparar</value>
+    <comment>Placeholder that appears in the compare hash text box</comment>
+  </data>
+  <data name="HashesMatch" xml:space="preserve">
+    <value>Coincide con {0}</value>
+    <comment>Appears when two compared hashes match, e.g. "Matches SHA256"</comment>
+  </data>
+  <data name="HashesDoNotMatch" xml:space="preserve">
+    <value>No se han encontrando coincidencias</value>
+    <comment>Appears when two compared hashes don't match</comment>
   </data>
   <data name="PathOrAlias" xml:space="preserve">
     <value>Ruta o alias</value>
@@ -4155,5 +4194,62 @@
   <data name="CannotCloneRepoTitle" xml:space="preserve">
     <value>No se puede clonar el repositorio</value>
     <comment>Cannot clone repo dialog title</comment>
+  </data>
+  <data name="CompareFile" xml:space="preserve">
+    <value>Comparar archivo</value>
+    <comment>Button that appears in file hash properties that allows the user to compare two files</comment>
+  </data>
+  <data name="SizeFormat" xml:space="preserve">
+    <value>Formato de tamaño</value>
+  </data>
+  <data name="Binary" xml:space="preserve">
+    <value>Binario</value>
+  </data>
+  <data name="Decimal" xml:space="preserve">
+    <value>Decimal</value>
+  </data>
+  <data name="EnableOmnibar" xml:space="preserve">
+    <value>Activar la barra de búsqueda unificada (omnibar)</value>
+  </data>
+  <data name="SectionsHiddenMessage" xml:space="preserve">
+    <value>Puede agregar secciones a la barra lateral haciendo clic derecho y seleccionando las secciones que desea agregar</value>
+  </data>
+  <data name="EmptyShelfText" xml:space="preserve">
+    <value>Arrastrar archivos o carpetas aquí para interactuar con ellos a través de diferentes pestañas</value>
+  </data>
+  <data name="OmnibarPathModeTextPlaceholder" xml:space="preserve">
+    <value>Introduzca una ruta a la que navegar...</value>
+  </data>
+  <data name="OmnibarCommandPaletteModeTextPlaceholder" xml:space="preserve">
+    <value>Buscar características y comandos...</value>
+  </data>
+  <data name="OmnibarSearchModeTextPlaceholder" xml:space="preserve">
+    <value>Buscar archivos y carpetas...</value>
+  </data>
+  <data name="DuringOngoingFileOperations" xml:space="preserve">
+    <value>Durante las operaciones de archivo</value>
+  </data>
+  <data name="ShowStatusCenterButton" xml:space="preserve">
+    <value>Mostrar botón del centro de estado</value>
+  </data>
+  <data name="StatusCenterProgressRing" xml:space="preserve">
+    <value>Anillo de progreso del centro de estado</value>
+    <comment>Screen reader name for the status center progress ring</comment>
+  </data>
+  <data name="IconFiles" xml:space="preserve">
+    <value>Archivos de iconos</value>
+    <comment>This is the friendly name for a variety of different icon files.</comment>
+  </data>
+  <data name="BreadcrumbBarEllipsisButtonToolTip" xml:space="preserve">
+    <value>Muestra la ruta de navegación contraída</value>
+  </data>
+  <data name="BreadcrumbBarChevronButtonToolTip" xml:space="preserve">
+    <value>Mostrar subcarpetas</value>
+  </data>
+  <data name="NoCommandsFound" xml:space="preserve">
+    <value>No hay comandos que contengan {0}</value>
+  </data>
+  <data name="SeeMore" xml:space="preserve">
+    <value>See more</value>
   </data>
 </root>

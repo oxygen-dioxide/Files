@@ -11,10 +11,10 @@ namespace Files.App.Actions
 		private static readonly StatusCenterViewModel StatusCenterViewModel = Ioc.Default.GetRequiredService<StatusCenterViewModel>();
 
 		public string Label
-			=> Strings.Install.GetLocalizedResource();
+			=> Strings.InstallFont.GetLocalizedResource();
 
 		public string Description
-			=> Strings.InstallFontDescription.GetLocalizedResource();
+			=> Strings.InstallFontDescription.GetLocalizedFormatResource(context.SelectedItems.Count);
 
 		public RichGlyph Glyph
 			=> new(themedIconStyle: "App.ThemedIcons.Actions.FontInstall");

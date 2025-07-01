@@ -10,10 +10,10 @@ namespace Files.App.Actions
 		private readonly IContentPageContext context;
 
 		public string Label
-			=> Strings.Install.GetLocalizedResource();
+			=> Strings.InstallDriver.GetLocalizedResource();
 		
 		public string Description
-			=> Strings.InstallInfDriverDescription.GetLocalizedResource();
+			=> Strings.InstallInfDriverDescription.GetLocalizedFormatResource(context.SelectedItems.Count);
 
 		public RichGlyph Glyph
 			=> new("\uE9F5");

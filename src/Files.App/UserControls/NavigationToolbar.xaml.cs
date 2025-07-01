@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using CommunityToolkit.WinUI;
+using Files.App.Controls;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,9 +10,8 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using System.Windows.Input;
+using Windows.AI.Actions.Hosting;
 using Windows.System;
-using FocusManager = Microsoft.UI.Xaml.Input.FocusManager;
 
 namespace Files.App.UserControls
 {
@@ -23,6 +23,7 @@ namespace Files.App.UserControls
 		private readonly MainPageViewModel MainPageViewModel = Ioc.Default.GetRequiredService<MainPageViewModel>();
 		private readonly ICommandManager Commands = Ioc.Default.GetRequiredService<ICommandManager>();
 		private readonly StatusCenterViewModel OngoingTasksViewModel = Ioc.Default.GetRequiredService<StatusCenterViewModel>();
+		private readonly IContentPageContext ContentPageContext = Ioc.Default.GetRequiredService<IContentPageContext>();
 
 		// Properties
 
@@ -41,18 +42,14 @@ namespace Files.App.UserControls
 		[GeneratedDependencyProperty]
 		public partial NavigationToolbarViewModel ViewModel { get; set; }
 
-		// Commands
-
-		private readonly ICommand historyItemClickedCommand;
-
 		// Constructor
 
 		public NavigationToolbar()
 		{
 			InitializeComponent();
-
-			historyItemClickedCommand = new RelayCommand<ToolbarHistoryItemModel?>(HistoryItemClicked);
 		}
+
+		// Methods
 
 		private void NavToolbar_Loading(FrameworkElement _, object e)
 		{
@@ -104,7 +101,7 @@ namespace Files.App.UserControls
 			if (App.AppModel.IsMainWindowClosed)
 				return;
 
-			var element = FocusManager.GetFocusedElement(MainWindow.Instance.Content.XamlRoot);
+			var element = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(MainWindow.Instance.Content.XamlRoot);
 			if (element is FlyoutBase or AppBarButton or Popup)
 				return;
 
@@ -195,9 +192,9 @@ namespace Files.App.UserControls
 
 				var flyoutItem = new MenuFlyoutItem
 				{
-					Icon = new FontIcon { Glyph = "\uE8B7" }, // Use font icon as placeholder
+					Icon = new FontIcon() { Glyph = "\uE8B7" }, // Placeholder icon
 					Text = fileName,
-					Command = historyItemClickedCommand,
+					Command = new RelayCommand<ToolbarHistoryItemModel?>(HistoryItemClicked),
 					CommandParameter = new ToolbarHistoryItemModel(item, isBackMode)
 				};
 
@@ -205,47 +202,47 @@ namespace Files.App.UserControls
 
 				// Start loading the thumbnail in the background
 				_ = LoadFlyoutItemIconAsync(flyoutItem, args.NavPathParam);
-			}
-		}
 
-		private async Task LoadFlyoutItemIconAsync(MenuFlyoutItem flyoutItem, string path)
-		{
-			var imageSource = await NavigationHelpers.GetIconForPathAsync(path);
-
-			if (imageSource is not null)
-				flyoutItem.Icon = new ImageIcon { Source = imageSource };
-		}
-
-		private void HistoryItemClicked(ToolbarHistoryItemModel? itemModel)
-		{
-			if (itemModel is null)
-				return;
-
-			var shellPage = Ioc.Default.GetRequiredService<IContentPageContext>().ShellPage;
-			if (shellPage is null)
-				return;
-
-			if (itemModel.IsBackMode)
-			{
-				// Remove all entries after the target entry in the BackwardStack
-				while (shellPage.BackwardStack.Last() != itemModel.PageStackEntry)
+				async Task LoadFlyoutItemIconAsync(MenuFlyoutItem flyoutItem, string path)
 				{
-					shellPage.BackwardStack.RemoveAt(shellPage.BackwardStack.Count - 1);
+					var imageSource = await NavigationHelpers.GetIconForPathAsync(path);
+
+					if (imageSource is not null)
+						flyoutItem.Icon = new ImageIcon() { Source = imageSource };
 				}
 
-				// Navigate back
-				shellPage.Back_Click();
-			}
-			else
-			{
-				// Remove all entries before the target entry in the ForwardStack
-				while (shellPage.ForwardStack.First() != itemModel.PageStackEntry)
+				void HistoryItemClicked(ToolbarHistoryItemModel? itemModel)
 				{
-					shellPage.ForwardStack.RemoveAt(0);
-				}
+					if (itemModel is null)
+						return;
 
-				// Navigate forward
-				shellPage.Forward_Click();
+					var shellPage = Ioc.Default.GetRequiredService<IContentPageContext>().ShellPage;
+					if (shellPage is null)
+						return;
+
+					if (itemModel.IsBackMode)
+					{
+						// Remove all entries after the target entry in the BackwardStack
+						while (shellPage.BackwardStack.Last() != itemModel.PageStackEntry)
+						{
+							shellPage.BackwardStack.RemoveAt(shellPage.BackwardStack.Count - 1);
+						}
+
+						// Navigate back
+						shellPage.Back_Click();
+					}
+					else
+					{
+						// Remove all entries before the target entry in the ForwardStack
+						while (shellPage.ForwardStack.First() != itemModel.PageStackEntry)
+						{
+							shellPage.ForwardStack.RemoveAt(0);
+						}
+
+						// Navigate forward
+						shellPage.Forward_Click();
+					}
+				}
 			}
 		}
 
@@ -257,6 +254,202 @@ namespace Files.App.UserControls
 			var previousControl = args.OldFocusedElement as FrameworkElement;
 			if (previousControl?.Name == nameof(HomeButton) || previousControl?.Name == nameof(Refresh))
 				ViewModel.IsEditModeEnabled = true;
+		}
+
+		private async void Omnibar_QuerySubmitted(Omnibar sender, OmnibarQuerySubmittedEventArgs args)
+		{
+			var mode = Omnibar.CurrentSelectedMode;
+
+			// Path mode
+			if (mode == OmnibarPathMode)
+			{
+				await ViewModel.HandleItemNavigationAsync(args.Text);
+				(MainPageViewModel.SelectedTabItem?.TabItemContent as Control)?.Focus(FocusState.Programmatic);
+				return;
+			}
+
+			// Command palette mode
+			else if (mode == OmnibarCommandPaletteMode)
+			{
+				var item = args.Item as NavigationBarSuggestionItem;
+
+				// Try invoking built-in command
+				foreach (var command in Commands)
+				{
+					if (command == Commands.None)
+						continue;
+
+					if (!string.Equals(command.Description, item?.Text, StringComparison.OrdinalIgnoreCase) &&
+						!string.Equals(command.Description, args.Text, StringComparison.OrdinalIgnoreCase))
+						continue;
+
+					await command.ExecuteAsync();
+					(MainPageViewModel.SelectedTabItem?.TabItemContent as Control)?.Focus(FocusState.Programmatic);
+					return;
+				}
+
+				// Try invoking Windows app action
+				if (ActionManager.Instance.ActionRuntime is not null && item?.ActionInstance is ActionInstance actionInstance)
+				{
+					// Workaround for https://github.com/microsoft/App-Actions-On-Windows-Samples/issues/7
+					var action = ActionManager.Instance.ActionRuntime.ActionCatalog.GetAllActions()
+						.FirstOrDefault(a => a.Id == actionInstance.Context.ActionId);
+
+					if (action is not null)
+					{
+						var overload = action.GetOverloads().FirstOrDefault();
+						await overload?.InvokeAsync(actionInstance.Context);
+					}
+
+					(MainPageViewModel.SelectedTabItem?.TabItemContent as Control)?.Focus(FocusState.Programmatic);
+					return;
+				}
+
+				await DialogDisplayHelper.ShowDialogAsync(Strings.InvalidCommand.GetLocalizedResource(),
+					string.Format(Strings.InvalidCommandContent.GetLocalizedResource(), args.Text));
+
+				(MainPageViewModel.SelectedTabItem?.TabItemContent as Control)?.Focus(FocusState.Programmatic);
+				return;
+			}
+
+			// Search mode
+			else if (mode == OmnibarSearchMode)
+			{
+			}
+		}
+
+		private async void Omnibar_TextChanged(Omnibar sender, OmnibarTextChangedEventArgs args)
+		{
+			if (args.Reason is not OmnibarTextChangeReason.UserInput)
+				return;
+
+			if (Omnibar.CurrentSelectedMode == OmnibarPathMode)
+			{
+				await ViewModel.PopulateOmnibarSuggestionsForPathMode();
+			}
+			else if (Omnibar.CurrentSelectedMode == OmnibarCommandPaletteMode)
+			{
+				ViewModel.PopulateOmnibarSuggestionsForCommandPaletteMode();
+			}
+			else if (Omnibar.CurrentSelectedMode == OmnibarSearchMode)
+			{
+			}
+		}
+
+		private async void BreadcrumbBar_ItemClicked(Controls.BreadcrumbBar sender, Controls.BreadcrumbBarItemClickedEventArgs args)
+		{
+			if (args.IsRootItem)
+			{
+				await ViewModel.HandleItemNavigationAsync("Home");
+				return;
+			}
+
+			// Navigation to the current folder should not happen
+			if (args.Index == ViewModel.PathComponents.Count - 1 ||
+				ViewModel.PathComponents[args.Index].Path is not { } path)
+				return;
+
+			await ViewModel.HandleFolderNavigationAsync(path);
+		}
+
+		private async void BreadcrumbBar_ItemDropDownFlyoutOpening(object sender, BreadcrumbBarItemDropDownFlyoutEventArgs e)
+		{
+			if (e.IsRootItem)
+			{
+				IHomeFolder homeFolder = new HomeFolder();
+				IContentPageContext contentPageContext = Ioc.Default.GetRequiredService<IContentPageContext>();
+
+				e.Flyout.Items.Add(new MenuFlyoutHeaderItem() { Text = Strings.QuickAccess.GetLocalizedResource() });
+
+				await foreach (var storable in homeFolder.GetQuickAccessFolderAsync())
+				{
+					if (storable is not IWindowsStorable windowsStorable)
+						continue;
+
+					var flyoutItem = new MenuFlyoutItem()
+					{
+						Text = windowsStorable.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_PARENTRELATIVEFORUI),
+						DataContext = windowsStorable.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_DESKTOPABSOLUTEPARSING),
+						Icon = new FontIcon() { Glyph = "\uE8B7" }, // As a placeholder
+					};
+
+					e.Flyout.Items.Add(flyoutItem);
+
+					windowsStorable.TryGetThumbnail((int)(16f * App.AppModel.AppWindowDPI), Windows.Win32.UI.Shell.SIIGBF.SIIGBF_ICONONLY, out var thumbnailData);
+					flyoutItem.Icon = new ImageIcon() { Source = await MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(() => thumbnailData.ToBitmapAsync(), Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal) };
+
+					windowsStorable.Dispose();
+
+					flyoutItem.Click += (sender, args) =>
+					{
+						// NOTE: We should not pass a path string but pass the storable object itself in the future.
+						contentPageContext.ShellPage!.NavigateToPath((string)flyoutItem.DataContext);
+					};
+				}
+
+				e.Flyout.Items.Add(new MenuFlyoutHeaderItem() { Text = Strings.Drives.GetLocalizedResource() });
+
+				await foreach (var storable in homeFolder.GetLogicalDrivesAsync())
+				{
+					if (storable is not IWindowsStorable windowsStorable)
+						continue;
+
+					var flyoutItem = new MenuFlyoutItem()
+					{
+						Text = windowsStorable.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_PARENTRELATIVEFORUI),
+						DataContext = windowsStorable.GetDisplayName(Windows.Win32.UI.Shell.SIGDN.SIGDN_DESKTOPABSOLUTEPARSING),
+						Icon = new FontIcon() { Glyph = "\uE8B7" }, // As a placeholder
+					};
+
+					e.Flyout.Items.Add(flyoutItem);
+
+					windowsStorable.TryGetThumbnail((int)(16f * App.AppModel.AppWindowDPI), Windows.Win32.UI.Shell.SIIGBF.SIIGBF_ICONONLY, out var thumbnailData);
+					flyoutItem.Icon = new ImageIcon() { Source = await MainWindow.Instance.DispatcherQueue.EnqueueOrInvokeAsync(() => thumbnailData.ToBitmapAsync(), Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal) };
+
+					windowsStorable.Dispose();
+
+					flyoutItem.Click += (sender, args) =>
+					{
+						// NOTE: We should not pass a path string but pass the storable object itself in the future.
+						contentPageContext.ShellPage!.NavigateToPath((string)flyoutItem.DataContext);
+					};
+				}
+
+				return;
+			}
+
+			await ViewModel.SetPathBoxDropDownFlyoutAsync(e.Flyout, ViewModel.PathComponents[e.Index]);
+		}
+
+		private void BreadcrumbBar_ItemDropDownFlyoutClosed(object sender, BreadcrumbBarItemDropDownFlyoutEventArgs e)
+		{
+			// Clear the flyout items to save memory
+			e.Flyout.Items.Clear();
+		}
+
+		private void Omnibar_LostFocus(object sender, RoutedEventArgs e)
+		{
+			if (Omnibar.CurrentSelectedMode == OmnibarCommandPaletteMode)
+			{
+				Omnibar.CurrentSelectedMode = OmnibarPathMode;
+				ViewModel.OmnibarCommandPaletteModeText = string.Empty;
+			}
+		}
+
+		private void Omnibar_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			if (e.Key is VirtualKey.Escape)
+			{
+				Omnibar.IsFocused = false;
+				(MainPageViewModel.SelectedTabItem?.TabItemContent as Control)?.Focus(FocusState.Programmatic);
+			}
+		}
+
+		private void NavigationButtonOverflowFlyoutButton_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+		{
+			// Prevent the Omnibar from taking focus if the overflow button is hidden while the button is focused
+			if (args.NewFocusedElement is TextBox)
+				args.Cancel = true;
 		}
 	}
 }

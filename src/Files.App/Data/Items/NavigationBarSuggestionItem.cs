@@ -1,16 +1,27 @@
 ﻿// Copyright (c) Files Community
 // Licensed under the MIT License.
 
+using Files.App.Controls;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using Windows.AI.Actions.Hosting;
+
 namespace Files.App.Data.Items
 {
-	public sealed partial class NavigationBarSuggestionItem : ObservableObject
+	[Obsolete("Remove once Omnibar goes out of experimental.")]
+	public sealed partial class NavigationBarSuggestionItem : ObservableObject, IOmnibarTextMemberPathProvider
 	{
+		private ImageSource? _ActionIconSource;
+		public ImageSource? ActionIconSource { get => _ActionIconSource; set => SetProperty(ref _ActionIconSource, value); }
+
+		private Style? _ThemedIconStyle;
+		public Style? ThemedIconStyle { get => _ThemedIconStyle; set => SetProperty(ref _ThemedIconStyle, value); }
+
+		private string? _Glyph;
+		public string? Glyph { get => _Glyph; set => SetProperty(ref _Glyph, value); }
+
 		private string? _Text;
-		public string? Text
-		{
-			get => _Text;
-			set => SetProperty(ref _Text, value);
-		}
+		public string? Text { get => _Text; set => SetProperty(ref _Text, value); }
 
 		private string? _PrimaryDisplay;
 		public string? PrimaryDisplay
@@ -39,6 +50,14 @@ namespace Files.App.Data.Items
 		{
 			get => _PrimaryDisplayPreMatched;
 			private set => SetProperty(ref _PrimaryDisplayPreMatched, value);
+		}
+
+
+		private ActionInstance? _ActionInstance;
+		public ActionInstance? ActionInstance
+		{
+			get => _ActionInstance;
+			set => SetProperty(ref _ActionInstance, value);
 		}
 
 		private string? _PrimaryDisplayMatched;
@@ -86,6 +105,17 @@ namespace Files.App.Data.Items
 					PrimaryDisplayPostMatched = PrimaryDisplay.Substring(index + SearchText.Length);
 				}
 			}
+		}
+
+		public string GetTextMemberPath(string textMemberPath)
+		{
+			return textMemberPath switch
+			{
+				nameof(Text) => Text,
+				nameof(PrimaryDisplay) => PrimaryDisplay,
+				nameof(SearchText) => SearchText,
+				_ => string.Empty
+			};
 		}
 	}
 }

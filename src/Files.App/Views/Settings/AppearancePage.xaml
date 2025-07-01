@@ -156,6 +156,7 @@
 					<GridView
 						Padding="8"
 						HorizontalAlignment="Stretch"
+						Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
 						ItemTemplate="{StaticResource AppThemeResourcesItemTemplate}"
 						ItemsSource="{x:Bind ViewModel.AppThemeResources, Mode=OneWay}"
 						SelectedItem="{x:Bind ViewModel.SelectedAppThemeResources, Mode=TwoWay}" />
@@ -268,6 +269,14 @@
 					<!--  Show toolbar  -->
 					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=ShowToolbar}">
 						<ToggleSwitch AutomationProperties.Name="{helpers:ResourceString Name=ShowToolbar}" IsOn="{x:Bind ViewModel.ShowToolbar, Mode=TwoWay}" />
+					</wctcontrols:SettingsCard>
+
+					<!--  Show status center  -->
+					<wctcontrols:SettingsCard Header="{helpers:ResourceString Name=ShowStatusCenterButton}">
+						<uc:ComboBoxEx
+							AutomationProperties.Name="{helpers:ResourceString Name=ShowStatusCenterButton}"
+							ItemsSource="{x:Bind ViewModel.StatusCenterVisibilityOptions.Values}"
+							SelectedItem="{x:Bind ViewModel.SelectedStatusCenterVisibilityOption, Mode=TwoWay}" />
 					</wctcontrols:SettingsCard>
 				</wctcontrols:SettingsExpander.Items>
 			</wctcontrols:SettingsExpander>

@@ -15,7 +15,7 @@ namespace Files.App.Actions
 			=> Strings.UnpinItemFromStart_Text.GetLocalizedResource();
 
 		public string Description
-			=> Strings.UnpinFromStartDescription.GetLocalizedResource();
+			=> Strings.UnpinFromStartDescription.GetLocalizedFormatResource(context.HasSelection ? context.SelectedItems.Count : 1);
 
 		public RichGlyph Glyph
 			=> new(themedIconStyle: "App.ThemedIcons.FavoritePinRemove");
@@ -36,7 +36,7 @@ namespace Files.App.Actions
 						IStorable storable = listedItem.IsFolder switch
 						{
 							true => await StorageService.GetFolderAsync(listedItem.ItemPath),
-							_ => await StorageService.GetFileAsync((listedItem as ShortcutItem)?.TargetPath ?? listedItem.ItemPath)
+							_ => await StorageService.GetFileAsync((listedItem as IShortcutItem)?.TargetPath ?? listedItem.ItemPath)
 						};
 						await StartMenuService.UnpinAsync(storable);
 					});

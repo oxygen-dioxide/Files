@@ -30,8 +30,10 @@ namespace Files.App.Controls
 
 			VisualStateManager.GoToState(this, "PointerOver", true);
 
+			owner.IsModeButtonPressed = true;
+
 			// Change the current mode
-			owner.ChangeMode(this);
+			owner.CurrentSelectedMode = this;
 		}
 
 		private void ModeButton_PointerExited(object sender, PointerRoutedEventArgs e)

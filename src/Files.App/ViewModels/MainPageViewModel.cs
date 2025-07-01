@@ -2,13 +2,16 @@
 // Licensed under the MIT License.
 
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using System.Windows.Input;
+using Windows.ApplicationModel;
+using Windows.Services.Store;
 using Windows.System;
-using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 
 namespace Files.App.ViewModels
 {
@@ -88,10 +91,27 @@ namespace Files.App.ViewModels
 		public float AppThemeBackgroundImageOpacity
 			=> AppearanceSettingsService.AppThemeBackgroundImageOpacity;
 
-		public ImageSource? AppThemeBackgroundImageSource =>
-			string.IsNullOrEmpty(AppearanceSettingsService.AppThemeBackgroundImageSource)
-				? null
-				: new BitmapImage(new Uri(AppearanceSettingsService.AppThemeBackgroundImageSource, UriKind.RelativeOrAbsolute));
+		public ImageSource? AppThemeBackgroundImageSource
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(AppearanceSettingsService.AppThemeBackgroundImageSource))
+					return null;
+
+				if (!Uri.TryCreate(AppearanceSettingsService.AppThemeBackgroundImageSource, UriKind.RelativeOrAbsolute, out Uri? validUri))
+					return null;
+
+				try
+				{
+					return new BitmapImage(validUri);
+				}
+				catch (Exception)
+				{
+					// Catch potential errors
+					return null;
+				}
+			}
+		}
 
 		public VerticalAlignment AppThemeBackgroundImageVerticalAlignment
 			=> AppearanceSettingsService.AppThemeBackgroundImageVerticalAlignment;
@@ -104,22 +124,37 @@ namespace Files.App.ViewModels
 			context.PageType is not ContentPageTypes.Home &&
 			context.PageType is not ContentPageTypes.ReleaseNotes &&
 			context.PageType is not ContentPageTypes.Settings;
-		
+
 		public bool ShowStatusBar =>
 			context.PageType is not ContentPageTypes.Home &&
 			context.PageType is not ContentPageTypes.ReleaseNotes &&
 			context.PageType is not ContentPageTypes.Settings;
 
+		public bool ShowReviewPrompt
+		{
+			get
+			{
+				var isTargetPackage = Package.Current.Id.Name == "49306atecsolution.FilesUWP" || Package.Current.Id.Name == "49306atecsolution.FilesPreview";
+				var hasNotClickedReview = !UserSettingsService.ApplicationSettingsService.ClickedToReviewApp;
+				var launchCountReached = AppLifecycleHelper.TotalLaunchCount == 30;
+
+				return isTargetPackage && hasNotClickedReview && launchCountReached;
+			}
+		}
 
 		// Commands
 
 		public ICommand NavigateToNumberedTabKeyboardAcceleratorCommand { get; }
+		public ICommand ReviewAppCommand { get; }
+		public ICommand DismissReviewPromptCommand { get; }
 
 		// Constructor
 
 		public MainPageViewModel()
 		{
 			NavigateToNumberedTabKeyboardAcceleratorCommand = new RelayCommand<KeyboardAcceleratorInvokedEventArgs>(ExecuteNavigateToNumberedTabKeyboardAcceleratorCommand);
+			ReviewAppCommand = new RelayCommand(ExecuteReviewAppCommand);
+			DismissReviewPromptCommand = new RelayCommand(ExecuteDismissReviewPromptCommand);
 
 			AppearanceSettingsService.PropertyChanged += (s, e) =>
 			{
@@ -284,6 +319,25 @@ namespace Files.App.ViewModels
 		}
 
 		// Command methods
+
+		private async void ExecuteReviewAppCommand()
+		{
+			UserSettingsService.ApplicationSettingsService.ClickedToReviewApp = true;
+			OnPropertyChanged(nameof(ShowReviewPrompt));
+
+			try
+			{
+				var storeContext = StoreContext.GetDefault();
+				InitializeWithWindow.Initialize(storeContext, MainWindow.Instance.WindowHandle);
+				await storeContext.RequestRateAndReviewAppAsync();
+			}
+			catch (Exception) { }
+		}
+
+		private void ExecuteDismissReviewPromptCommand()
+		{
+			UserSettingsService.ApplicationSettingsService.ClickedToReviewApp = true;
+		}
 
 		private async void ExecuteNavigateToNumberedTabKeyboardAcceleratorCommand(KeyboardAcceleratorInvokedEventArgs? e)
 		{

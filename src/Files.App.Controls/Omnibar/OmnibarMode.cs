@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Input;
 namespace Files.App.Controls
 {
 	[DebuggerDisplay("{" + nameof(ToString) + "(),nq}")]
-	public partial class OmnibarMode : Control
+	public partial class OmnibarMode : ItemsControl
 	{
 		// Constants
 
@@ -54,7 +54,8 @@ namespace Files.App.Controls
 				VisualStateManager.GoToState(this, "PointerPressed", true);
 
 				// Change the current mode
-				owner.ChangeMode(this, true);
+				owner.CurrentSelectedMode = this;
+				owner.FocusTextBox();
 
 				VisualStateManager.GoToState(this, "PointerNormal", true);
 			}
@@ -65,21 +66,24 @@ namespace Files.App.Controls
 			}
 		}
 
+		protected override void OnItemsChanged(object e)
+		{
+			base.OnItemsChanged(e);
+
+			if (_ownerRef is not null && _ownerRef.TryGetTarget(out var owner))
+				owner.TryToggleIsSuggestionsPopupOpen(true);
+		}
+
 		private void OmnibarMode_Loaded(object sender, RoutedEventArgs e)
 		{
 			// Set this mode as the current mode if it is the default mode
 			if (IsDefault && _ownerRef is not null && _ownerRef.TryGetTarget(out var owner))
-				owner.ChangeMode(this);
+				owner.CurrentSelectedMode = this;
 		}
 
 		public void SetOwner(Omnibar owner)
 		{
 			_ownerRef = new(owner);
-		}
-
-		public void OnChangingCurrentMode(bool isCurrentMode)
-		{
-			_modeButton.IsTabStop = !isCurrentMode;
 		}
 
 		public override string ToString()

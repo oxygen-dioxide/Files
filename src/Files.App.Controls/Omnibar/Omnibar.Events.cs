@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Files Community
 // Licensed under the MIT License.
 
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
+using Windows.UI.Core;
 
 namespace Files.App.Controls
 {
@@ -14,14 +16,28 @@ namespace Files.App.Controls
 			_textBoxSuggestionsContainerBorder.Width = ActualWidth;
 		}
 
+		private void AutoSuggestBox_GettingFocus(UIElement sender, GettingFocusEventArgs args)
+		{
+			if (args.OldFocusedElement is null)
+				return;
+
+			_previouslyFocusedElement = new(args.OldFocusedElement as UIElement);
+		}
+
+		private void AutoSuggestBox_LosingFocus(UIElement sender, LosingFocusEventArgs args)
+		{
+			if (IsModeButtonPressed)
+			{
+				IsModeButtonPressed = false;
+				args.TryCancel();
+				return;
+			}
+		}
+
 		private void AutoSuggestBox_GotFocus(object sender, RoutedEventArgs e)
 		{
-			_isFocused = true;
-
-			VisualStateManager.GoToState(CurrentSelectedMode, "Focused", true);
-			VisualStateManager.GoToState(_textBox, "InputAreaVisible", true);
-
-			TryToggleIsSuggestionsPopupOpen(true);
+			IsFocused = true;
+			_textBox.SelectAll();
 		}
 
 		private void AutoSuggestBox_LostFocus(object sender, RoutedEventArgs e)
@@ -30,18 +46,10 @@ namespace Files.App.Controls
 			if (_textBox.ContextFlyout.IsOpen)
 				return;
 
-			_isFocused = false;
-
-			if (CurrentSelectedMode?.ContentOnInactive is not null)
-			{
-				VisualStateManager.GoToState(CurrentSelectedMode, "CurrentUnfocused", true);
-				VisualStateManager.GoToState(_textBox, "InputAreaCollapsed", true);
-			}
-
-			TryToggleIsSuggestionsPopupOpen(false);
+			IsFocused = false;
 		}
 
-		private void AutoSuggestBox_KeyDown(object sender, KeyRoutedEventArgs e)
+		private async void AutoSuggestBox_KeyDown(object sender, KeyRoutedEventArgs e)
 		{
 			if (e.Key is VirtualKey.Enter)
 			{
@@ -74,15 +82,31 @@ namespace Files.App.Controls
 				{
 					_textBoxSuggestionsListView.SelectedIndex = nextIndex;
 
-					ChooseSuggestionItem(_textBoxSuggestionsListView.SelectedItem);
+					ChooseSuggestionItem(_textBoxSuggestionsListView.SelectedItem, true);
 				}
 			}
-			else if (e.Key == VirtualKey.Escape && _textBoxSuggestionsPopup.IsOpen)
+			else if (e.Key == VirtualKey.Escape)
 			{
 				e.Handled = true;
 
-				RevertTextToUserInput();
-				_textBoxSuggestionsPopup.IsOpen = false;
+				if (_textBoxSuggestionsPopup.IsOpen)
+				{
+					RevertTextToUserInput();
+					_textBoxSuggestionsPopup.IsOpen = false;
+				}
+				else
+				{
+					_previouslyFocusedElement.TryGetTarget(out var previouslyFocusedElement);
+					previouslyFocusedElement?.Focus(FocusState.Programmatic);
+				}
+			}
+			else if (e.Key == VirtualKey.Tab && !InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
+			{
+				// Focus on inactive content when pressing Tab instead of moving to the next control in the tab order
+				e.Handled = true;
+				IsFocused = false;
+				await Task.Delay(15);
+				CurrentSelectedMode?.ContentOnInactive?.Focus(FocusState.Keyboard);
 			}
 			else
 			{
@@ -92,7 +116,8 @@ namespace Files.App.Controls
 
 		private void AutoSuggestBox_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			CurrentSelectedMode!.Text = _textBox.Text;
+			if (string.Compare(_textBox.Text, CurrentSelectedMode!.Text, StringComparison.OrdinalIgnoreCase) is not 0)
+				CurrentSelectedMode!.Text = _textBox.Text;
 
 			// UpdateSuggestionListView();
 
@@ -114,6 +139,12 @@ namespace Files.App.Controls
 			args.TryCancel();
 		}
 
+		private void AutoSuggestBoxSuggestionsPopup_Opened(object? sender, object e)
+		{
+			if (_textBoxSuggestionsListView.Items.Count > 0)
+				_textBoxSuggestionsListView.ScrollIntoView(_textBoxSuggestionsListView.Items[0]);
+		}
+
 		private void AutoSuggestBoxSuggestionsListView_ItemClick(object sender, ItemClickEventArgs e)
 		{
 			if (CurrentSelectedMode is null)
@@ -121,6 +152,11 @@ namespace Files.App.Controls
 
 			ChooseSuggestionItem(e.ClickedItem);
 			SubmitQuery(e.ClickedItem);
+		}
+
+		private void AutoSuggestBoxSuggestionsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			_textBoxSuggestionsListView.ScrollIntoView(_textBoxSuggestionsListView.SelectedItem);
 		}
 	}
 }
