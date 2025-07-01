@@ -17,7 +17,7 @@ namespace Files.App.Actions
 			=> Strings.ExtractFiles.GetLocalizedResource();
 
 		public override string Description
-			=> Strings.DecompressArchiveDescription.GetLocalizedResource();
+			=> Strings.DecompressArchiveDescription.GetLocalizedFormatResource(context.SelectedItems.Count);
 
 		public override HotKey HotKey
 			=> new(Keys.E, KeyModifiers.Ctrl);
@@ -43,6 +43,11 @@ namespace Files.App.Actions
 
 			var isArchiveEncrypted = await FilesystemTasks.Wrap(() => StorageArchiveService.IsEncryptedAsync(archive.Path));
 			var isArchiveEncodingUndetermined = await FilesystemTasks.Wrap(() => StorageArchiveService.IsEncodingUndeterminedAsync(archive.Path));
+			Encoding? detectedEncoding = null;
+			if (isArchiveEncodingUndetermined)
+			{
+				detectedEncoding = await FilesystemTasks.Wrap(() => StorageArchiveService.DetectEncodingAsync(archive.Path));
+			}
 			var password = string.Empty;
 			Encoding? encoding = null;
 
@@ -51,7 +56,8 @@ namespace Files.App.Actions
 			{
 				IsArchiveEncrypted = isArchiveEncrypted,
 				IsArchiveEncodingUndetermined = isArchiveEncodingUndetermined,
-				ShowPathSelection = true
+				ShowPathSelection = true,
+				DetectedEncoding = detectedEncoding,
 			};
 			decompressArchiveDialog.ViewModel = decompressArchiveViewModel;
 

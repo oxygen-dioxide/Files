@@ -44,6 +44,16 @@ namespace Files.App.ViewModels.Dialogs
 			set => SetProperty(ref isArchiveEncodingUndetermined, value);
 		}
 
+		private Encoding? detectedEncoding;
+		public Encoding? DetectedEncoding
+		{
+			get => detectedEncoding;
+			set { 
+				SetProperty(ref detectedEncoding, value);
+				RefreshEncodingOptions();
+			}
+		}
+
 		private bool showPathSelection;
 		public bool ShowPathSelection
 		{
@@ -55,6 +65,25 @@ namespace Files.App.ViewModels.Dialogs
 
 		public EncodingItem[] EncodingOptions { get; set; } = EncodingItem.Defaults;
 		public EncodingItem SelectedEncoding { get; set; }
+		void RefreshEncodingOptions()
+		{
+			if (detectedEncoding != null)
+			{
+				EncodingOptions = EncodingItem.Defaults
+				.Prepend(new EncodingItem(
+					detectedEncoding, 
+					string.Format(Strings.EncodingDetected.GetLocalizedResource(), detectedEncoding.EncodingName)
+				))
+				.ToArray();
+			}
+			else
+			{
+				EncodingOptions = EncodingItem.Defaults;
+			}
+			SelectedEncoding = EncodingOptions.FirstOrDefault();
+		}
+
+		
 
 		public IRelayCommand PrimaryButtonClickCommand { get; private set; }
 
