@@ -217,7 +217,7 @@
     <value>إظهار الملفات والمجلدات المخفية</value>
   </data>
   <data name="ShowDotFiles" xml:space="preserve">
-    <value>الملفات المبدوءة بـ نقطة</value>
+    <value>Show dot files</value>
   </data>
   <data name="Appearance" xml:space="preserve">
     <value>المظهر</value>
@@ -1096,6 +1096,12 @@
   </data>
   <data name="ToggleToolbarDescription" xml:space="preserve">
     <value>عرض / إخفاء شريط الأدوات</value>
+  </data>
+  <data name="ToggleFilterHeader" xml:space="preserve">
+    <value>Toggle filter header</value>
+  </data>
+  <data name="ToggleFilterHeaderDescription" xml:space="preserve">
+    <value>Toggle visibility of the filter header</value>
   </data>
   <data name="DetailsPanePreviewNotAvaliableText" xml:space="preserve">
     <value>المعاينة غير متوفرة</value>
@@ -2013,11 +2019,23 @@
   <data name="Behaviors" xml:space="preserve">
     <value>سلوكيات</value>
   </data>
-  <data name="ReviewFiles" xml:space="preserve">
-    <value>مراجعة الملفات</value>
+  <data name="Hello" xml:space="preserve">
+    <value>Hello!</value>
   </data>
-  <data name="ReviewFilesContent" xml:space="preserve">
-    <value>هل ترغب في مراجعة Files؟</value>
+  <data name="ReviewFilesSubtitle" xml:space="preserve">
+    <value>Enjoying Files? Please consider reviewing in the Microsoft Store.</value>
+  </data>  
+  <data name="SponsorSubtitle" xml:space="preserve">
+    <value>Enjoying Files? Please consider supporting the project on GitHub.</value>
+  </data>
+  <data name="Sponsor" xml:space="preserve">
+    <value>Sponsor</value>
+  </data>
+  <data name="RateUs" xml:space="preserve">
+    <value>Rate us</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
   </data>
   <data name="SetAsBackgroundFlyout" xml:space="preserve">
     <value>تعيين كخلفية</value>
@@ -4067,9 +4085,6 @@
   <data name="NavigateHomeDescription" xml:space="preserve">
     <value>انتقل إلى الصفحة الرئيسية</value>
   </data>
-  <data name="ShowHomeButton" xml:space="preserve">
-    <value>إظهار زر الصفحة الرئيسية في شريط العنوان</value>
-  </data>
   <data name="Toolbars" xml:space="preserve">
     <value>شريط الأدوات</value>
   </data>
@@ -4252,5 +4267,11 @@
   </data>
   <data name="SeeMore" xml:space="preserve">
     <value>See more</value>
+  </data>
+  <data name="FilteringFor" xml:space="preserve">
+    <value>Filtering for</value>
+  </data>
+  <data name="Filename" xml:space="preserve">
+    <value>Filename</value>
   </data>
 </root>

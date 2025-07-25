@@ -166,7 +166,7 @@
     <value>Kihagyás</value>
   </data>
   <data name="SelectAll" xml:space="preserve">
-    <value>Select all</value>
+    <value>Összes kijelölése</value>
   </data>
   <data name="InvertSelection" xml:space="preserve">
     <value>Kijelölés megfordítása</value>
@@ -217,7 +217,7 @@
     <value>Rejtett fájlok és mappák megjelenítése</value>
   </data>
   <data name="ShowDotFiles" xml:space="preserve">
-    <value>Dot files</value>
+    <value>Show dot files</value>
   </data>
   <data name="Appearance" xml:space="preserve">
     <value>Megjelenés</value>
@@ -1096,6 +1096,12 @@
   </data>
   <data name="ToggleToolbarDescription" xml:space="preserve">
     <value>Toggle visibility of the toolbar</value>
+  </data>
+  <data name="ToggleFilterHeader" xml:space="preserve">
+    <value>Toggle filter header</value>
+  </data>
+  <data name="ToggleFilterHeaderDescription" xml:space="preserve">
+    <value>Toggle visibility of the filter header</value>
   </data>
   <data name="DetailsPanePreviewNotAvaliableText" xml:space="preserve">
     <value>Nincs elérhető előnézet</value>
@@ -2012,11 +2018,23 @@
   <data name="Behaviors" xml:space="preserve">
     <value>Működés</value>
   </data>
-  <data name="ReviewFiles" xml:space="preserve">
-    <value>Értékelés</value>
+  <data name="Hello" xml:space="preserve">
+    <value>Hello!</value>
   </data>
-  <data name="ReviewFilesContent" xml:space="preserve">
-    <value>Szeretné értékelni az alkalmazást?</value>
+  <data name="ReviewFilesSubtitle" xml:space="preserve">
+    <value>Enjoying Files? Please consider reviewing in the Microsoft Store.</value>
+  </data>  
+  <data name="SponsorSubtitle" xml:space="preserve">
+    <value>Enjoying Files? Please consider supporting the project on GitHub.</value>
+  </data>
+  <data name="Sponsor" xml:space="preserve">
+    <value>Sponsor</value>
+  </data>
+  <data name="RateUs" xml:space="preserve">
+    <value>Rate us</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
   </data>
   <data name="SetAsBackgroundFlyout" xml:space="preserve">
     <value>Beállítás háttérképként</value>
@@ -2295,7 +2313,7 @@
     <value>Helyi menü elemek</value>
   </data>
   <data name="ShowFileExtensions" xml:space="preserve">
-    <value>File extensions</value>
+    <value>Fájlkiterjesztések</value>
   </data>
   <data name="FormatDriveText" xml:space="preserve">
     <value>Formázás</value>
@@ -4066,9 +4084,6 @@
   <data name="NavigateHomeDescription" xml:space="preserve">
     <value>Navigálás a kezdőlapra</value>
   </data>
-  <data name="ShowHomeButton" xml:space="preserve">
-    <value>Kezdőlap gomb megjelenítése a címsorban</value>
-  </data>
   <data name="Toolbars" xml:space="preserve">
     <value>Eszköztárak</value>
   </data>
@@ -4251,5 +4266,11 @@
   </data>
   <data name="SeeMore" xml:space="preserve">
     <value>See more</value>
+  </data>
+  <data name="FilteringFor" xml:space="preserve">
+    <value>Filtering for</value>
+  </data>
+  <data name="Filename" xml:space="preserve">
+    <value>Filename</value>
   </data>
 </root>

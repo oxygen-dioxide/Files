@@ -217,7 +217,7 @@
     <value>Mostrar arquivos e pastas ocultas</value>
   </data>
   <data name="ShowDotFiles" xml:space="preserve">
-    <value>Arquivos de pontos</value>
+    <value>Mostrar arquivos "."</value>
   </data>
   <data name="Appearance" xml:space="preserve">
     <value>Aparência</value>
@@ -1096,6 +1096,12 @@
   </data>
   <data name="ToggleToolbarDescription" xml:space="preserve">
     <value>Alternar a visibilidade da barra de ferramentas</value>
+  </data>
+  <data name="ToggleFilterHeader" xml:space="preserve">
+    <value>Alternar cabeçalho do filtro</value>
+  </data>
+  <data name="ToggleFilterHeaderDescription" xml:space="preserve">
+    <value>Alternar a visibilidade do cabeçalho do filtro</value>
   </data>
   <data name="DetailsPanePreviewNotAvaliableText" xml:space="preserve">
     <value>Nenhuma visualização disponível</value>
@@ -2012,11 +2018,23 @@
   <data name="Behaviors" xml:space="preserve">
     <value>Comportamentos</value>
   </data>
-  <data name="ReviewFiles" xml:space="preserve">
-    <value>Revisar Arquivos</value>
+  <data name="Hello" xml:space="preserve">
+    <value>Olá!</value>
   </data>
-  <data name="ReviewFilesContent" xml:space="preserve">
-    <value>Deseja revisar Arquivos?</value>
+  <data name="ReviewFilesSubtitle" xml:space="preserve">
+    <value>Gostando do Files? Considere fazer uma avaliação na Microsoft Store.</value>
+  </data>  
+  <data name="SponsorSubtitle" xml:space="preserve">
+    <value>Gostando do Files? Por favor, considere apoiar o projeto no GitHub.</value>
+  </data>
+  <data name="Sponsor" xml:space="preserve">
+    <value>Patrocinador</value>
+  </data>
+  <data name="RateUs" xml:space="preserve">
+    <value>Avalie-nos</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Dispensar</value>
   </data>
   <data name="SetAsBackgroundFlyout" xml:space="preserve">
     <value>Definir como plano de fundo</value>
@@ -4066,9 +4084,6 @@
   <data name="NavigateHomeDescription" xml:space="preserve">
     <value>Navegar para a página inicial</value>
   </data>
-  <data name="ShowHomeButton" xml:space="preserve">
-    <value>Mostrar botão de início na barra de endereços</value>
-  </data>
   <data name="Toolbars" xml:space="preserve">
     <value>Barras de ferramentas</value>
   </data>
@@ -4251,5 +4266,11 @@
   </data>
   <data name="SeeMore" xml:space="preserve">
     <value>Ver mais</value>
+  </data>
+  <data name="FilteringFor" xml:space="preserve">
+    <value>Filtrar por</value>
+  </data>
+  <data name="Filename" xml:space="preserve">
+    <value>Nome do arquivo</value>
   </data>
 </root>

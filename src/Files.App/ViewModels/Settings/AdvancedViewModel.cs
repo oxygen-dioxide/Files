@@ -10,7 +10,6 @@ using System.Windows.Input;
 using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.System;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Files.App.ViewModels.Settings
@@ -195,7 +194,7 @@ namespace Files.App.ViewModels.Settings
 
 		private async Task ExportSettingsAsync()
 		{
-			string[] extensions = [Strings.ZipFileCapitalized.GetLocalizedResource(), "*.zip" ];
+			string[] extensions = [Strings.ZipFileCapitalized.GetLocalizedResource(), "*.zip"];
 			bool result = CommonDialogService.Open_FileSaveDialog(MainWindow.Instance.WindowHandle, false, extensions, Environment.SpecialFolder.Desktop, out var filePath);
 			if (!result)
 				return;
@@ -327,7 +326,7 @@ namespace Files.App.ViewModels.Settings
 				}
 			}
 		}
-		
+
 		public bool ShowSystemTrayIcon
 		{
 			get => UserSettingsService.GeneralSettingsService.ShowSystemTrayIcon;
@@ -355,21 +354,6 @@ namespace Files.App.ViewModels.Settings
 				OnPropertyChanged();
 			}
 		}
-		
-		// TODO remove when feature is marked as stable
-		public bool EnableOmnibar
-		{
-			get => UserSettingsService.GeneralSettingsService.EnableOmnibar;
-			set
-			{
-				if (value == UserSettingsService.GeneralSettingsService.EnableOmnibar)
-					return;
-
-				UserSettingsService.GeneralSettingsService.EnableOmnibar = value;
-				OnPropertyChanged();
-			}
-		}
-
 		public async Task OpenFilesOnWindowsStartupAsync()
 		{
 			var stateMode = await ReadState();

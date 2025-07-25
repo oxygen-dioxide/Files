@@ -58,6 +58,7 @@ namespace Files.App.Data.Commands
 		public IRichCommand ToggleInfoPane => commands[CommandCodes.ToggleInfoPane];
 		public IRichCommand ToggleToolbar => commands[CommandCodes.ToggleToolbar];
 		public IRichCommand ToggleShelfPane => commands[CommandCodes.ToggleShelfPane];
+		public IRichCommand ToggleFilterHeader => commands[CommandCodes.ToggleFilterHeader];
 		public IRichCommand SelectAll => commands[CommandCodes.SelectAll];
 		public IRichCommand InvertSelection => commands[CommandCodes.InvertSelection];
 		public IRichCommand ClearSelection => commands[CommandCodes.ClearSelection];
@@ -133,7 +134,7 @@ namespace Files.App.Data.Commands
 		public IRichCommand LayoutIncreaseSize => commands[CommandCodes.LayoutIncreaseSize];
 		public IRichCommand LayoutDetails => commands[CommandCodes.LayoutDetails];
 		public IRichCommand LayoutList => commands[CommandCodes.LayoutList];
-		public IRichCommand LayoutCards=> commands[CommandCodes.LayoutCards];
+		public IRichCommand LayoutCards => commands[CommandCodes.LayoutCards];
 		public IRichCommand LayoutGrid => commands[CommandCodes.LayoutGrid];
 		public IRichCommand LayoutColumns => commands[CommandCodes.LayoutColumns];
 		public IRichCommand LayoutAdaptive => commands[CommandCodes.LayoutAdaptive];
@@ -264,6 +265,7 @@ namespace Files.App.Data.Commands
 			[CommandCodes.ToggleInfoPane] = new ToggleInfoPaneAction(),
 			[CommandCodes.ToggleToolbar] = new ToggleToolbarAction(),
 			[CommandCodes.ToggleShelfPane] = new ToggleShelfPaneAction(),
+			[CommandCodes.ToggleFilterHeader] = new ToggleFilterHeaderAction(),
 			[CommandCodes.SelectAll] = new SelectAllAction(),
 			[CommandCodes.InvertSelection] = new InvertSelectionAction(),
 			[CommandCodes.ClearSelection] = new ClearSelectionAction(),

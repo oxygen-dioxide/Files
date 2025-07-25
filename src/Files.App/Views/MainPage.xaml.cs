@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.Foundation.Metadata;
 using Windows.Graphics;
+using WinUIEx;
 using GridSplitter = Files.App.Controls.GridSplitter;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -41,8 +42,11 @@ namespace Files.App.Views
 			SidebarAdaptiveViewModel.PaneFlyout = (MenuFlyout)Resources["SidebarContextMenu"];
 			ViewModel = Ioc.Default.GetRequiredService<MainPageViewModel>();
 
-			if (FilePropertiesHelpers.FlowDirectionSettingIsRightToLeft)
+			if (AppLanguageHelper.IsPreferredLanguageRtl)
+			{
+				MainWindow.Instance.SetExtendedWindowStyle(ExtendedWindowStyle.LayoutRtl);
 				FlowDirection = FlowDirection.RightToLeft;
+			}
 
 			ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 			UserSettingsService.OnSettingChangedEvent += UserSettingsService_OnSettingChangedEvent;
@@ -153,6 +157,9 @@ namespace Files.App.Views
 			e.CurrentInstance.ContentChanged += TabItemContent_ContentChanged;
 
 			await NavigationHelpers.UpdateInstancePropertiesAsync(navArgs);
+
+			// Focus the content of the selected tab item (this also avoids an issue where the Omnibar sometimes steals the focus)
+			(ViewModel.SelectedTabItem?.TabItemContent as Control)?.Focus(FocusState.Programmatic);
 		}
 
 		private void PaneHolder_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -212,7 +219,7 @@ namespace Files.App.Views
 					// Execute command for hotkey
 					var command = Commands[hotKey];
 
-					if (command.Code is CommandCodes.OpenItem && source?.FindAscendantOrSelf<PathBreadcrumb>() is not null)
+					if (command.Code is CommandCodes.OpenItem && (source?.FindAscendantOrSelf<Omnibar>() is not null || source?.FindAscendantOrSelf<AppBarButton>() is not null))
 						break;
 
 

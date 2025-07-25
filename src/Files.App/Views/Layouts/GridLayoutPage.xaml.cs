@@ -131,7 +131,7 @@ namespace Files.App.Views.Layouts
 		/// <summary>
 		/// Gets the visibility for the contextual property string in the Cards View layout.
 		/// </summary>
-		public bool CardsViewShowContextualProperty=>
+		public bool CardsViewShowContextualProperty =>
 			LayoutSettingsService.CardsViewSize != CardsViewSizeKind.Small;
 
 		/// <summary>
@@ -531,8 +531,7 @@ namespace Files.App.Views.Layouts
 			}
 			else if (e.Key == VirtualKey.Space)
 			{
-				if (!ParentShellPageInstance.ToolbarViewModel.IsEditModeEnabled)
-					e.Handled = true;
+				e.Handled = true;
 			}
 			else if (e.KeyStatus.IsMenuKeyDown && (e.Key == VirtualKey.Left || e.Key == VirtualKey.Right || e.Key == VirtualKey.Up))
 			{

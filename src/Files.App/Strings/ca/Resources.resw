@@ -1097,6 +1097,12 @@
   <data name="ToggleToolbarDescription" xml:space="preserve">
     <value>Commuta la visibilitat de la barra d'eines</value>
   </data>
+  <data name="ToggleFilterHeader" xml:space="preserve">
+    <value>Commuta la capçalera del filtre</value>
+  </data>
+  <data name="ToggleFilterHeaderDescription" xml:space="preserve">
+    <value>Commuta la visibilitat de la capçalera del filtre</value>
+  </data>
   <data name="DetailsPanePreviewNotAvaliableText" xml:space="preserve">
     <value>Cap visualització prèvia disponible</value>
   </data>
@@ -2012,11 +2018,23 @@
   <data name="Behaviors" xml:space="preserve">
     <value>Comportaments</value>
   </data>
-  <data name="ReviewFiles" xml:space="preserve">
-    <value>Valoreu el Files</value>
+  <data name="Hello" xml:space="preserve">
+    <value>Hola!</value>
   </data>
-  <data name="ReviewFilesContent" xml:space="preserve">
-    <value>Voleu valorar el Files?</value>
+  <data name="ReviewFilesSubtitle" xml:space="preserve">
+    <value>Us agrada el Files? Considereu fer una ressenya a la Microsoft Store.</value>
+  </data>  
+  <data name="SponsorSubtitle" xml:space="preserve">
+    <value>Us agrada el Files? Penseu en donar suport al projecte al GitHub.</value>
+  </data>
+  <data name="Sponsor" xml:space="preserve">
+    <value>Patrocinador</value>
+  </data>
+  <data name="RateUs" xml:space="preserve">
+    <value>Puntueu-nos</value>
+  </data>
+  <data name="Dismiss" xml:space="preserve">
+    <value>Descarta</value>
   </data>
   <data name="SetAsBackgroundFlyout" xml:space="preserve">
     <value>Estableix com a fons</value>
@@ -4066,9 +4084,6 @@
   <data name="NavigateHomeDescription" xml:space="preserve">
     <value>Aneu a la pàgina d'inici</value>
   </data>
-  <data name="ShowHomeButton" xml:space="preserve">
-    <value>Mostra el botó d'inici a la barra d'adreces</value>
-  </data>
   <data name="Toolbars" xml:space="preserve">
     <value>Barra d'eines</value>
   </data>
@@ -4251,5 +4266,11 @@
   </data>
   <data name="SeeMore" xml:space="preserve">
     <value>Mostra'n més</value>
+  </data>
+  <data name="FilteringFor" xml:space="preserve">
+    <value>Filtra per</value>
+  </data>
+  <data name="Filename" xml:space="preserve">
+    <value>Nom del fitxer</value>
   </data>
 </root>

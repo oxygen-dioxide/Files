@@ -1,10 +1,8 @@
 ﻿// Copyright (c) Files Community
 // Licensed under the MIT License.
 
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
-using Windows.UI.Core;
 
 namespace Files.App.Controls
 {
@@ -21,32 +19,43 @@ namespace Files.App.Controls
 			if (args.OldFocusedElement is null)
 				return;
 
+			GlobalHelper.WriteDebugStringForOmnibar("The TextBox is getting the focus.");
+
 			_previouslyFocusedElement = new(args.OldFocusedElement as UIElement);
 		}
 
 		private void AutoSuggestBox_LosingFocus(UIElement sender, LosingFocusEventArgs args)
 		{
-			if (IsModeButtonPressed)
-			{
-				IsModeButtonPressed = false;
-				args.TryCancel();
+			// Prevent the TextBox from losing focus when the ModeButton is focused
+			if (args.NewFocusedElement is not Button button ||
+				args.InputDevice is FocusInputDeviceKind.Keyboard ||
+				button.Name.ToString() != "PART_ModeButton")
 				return;
-			}
+
+			args.TryCancel();
 		}
 
 		private void AutoSuggestBox_GotFocus(object sender, RoutedEventArgs e)
 		{
+			GlobalHelper.WriteDebugStringForOmnibar("The TextBox got the focus.");
+
 			IsFocused = true;
+			IsFocusedChanged?.Invoke(this, new(IsFocused));
+
 			_textBox.SelectAll();
 		}
 
 		private void AutoSuggestBox_LostFocus(object sender, RoutedEventArgs e)
 		{
 			// TextBox still has focus if the context menu for selected text is open
-			if (_textBox.ContextFlyout.IsOpen)
+			var element = Microsoft.UI.Xaml.Input.FocusManager.GetFocusedElement(this.XamlRoot);
+			if (element is FlyoutBase or Popup)
 				return;
 
+			GlobalHelper.WriteDebugStringForOmnibar("The TextBox lost the focus.");
+
 			IsFocused = false;
+			IsFocusedChanged?.Invoke(this, new(IsFocused));
 		}
 
 		private async void AutoSuggestBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -55,11 +64,15 @@ namespace Files.App.Controls
 			{
 				e.Handled = true;
 
+				GlobalHelper.WriteDebugStringForOmnibar("The TextBox accepted the Enter key.");
+
 				SubmitQuery(_textBoxSuggestionsPopup.IsOpen && _textBoxSuggestionsListView.SelectedIndex is not -1 ? _textBoxSuggestionsListView.SelectedItem : null);
 			}
 			else if ((e.Key == VirtualKey.Up || e.Key == VirtualKey.Down) && _textBoxSuggestionsPopup.IsOpen)
 			{
 				e.Handled = true;
+
+				GlobalHelper.WriteDebugStringForOmnibar("The TextBox accepted the Up/Down key while the suggestions pop-up is open.");
 
 				var currentIndex = _textBoxSuggestionsListView.SelectedIndex;
 				var nextIndex = currentIndex;
@@ -89,6 +102,8 @@ namespace Files.App.Controls
 			{
 				e.Handled = true;
 
+				GlobalHelper.WriteDebugStringForOmnibar("The TextBox accepted the Esc key.");
+
 				if (_textBoxSuggestionsPopup.IsOpen)
 				{
 					RevertTextToUserInput();
@@ -99,14 +114,6 @@ namespace Files.App.Controls
 					_previouslyFocusedElement.TryGetTarget(out var previouslyFocusedElement);
 					previouslyFocusedElement?.Focus(FocusState.Programmatic);
 				}
-			}
-			else if (e.Key == VirtualKey.Tab && !InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down))
-			{
-				// Focus on inactive content when pressing Tab instead of moving to the next control in the tab order
-				e.Handled = true;
-				IsFocused = false;
-				await Task.Delay(15);
-				CurrentSelectedMode?.ContentOnInactive?.Focus(FocusState.Keyboard);
 			}
 			else
 			{
@@ -121,10 +128,10 @@ namespace Files.App.Controls
 
 			// UpdateSuggestionListView();
 
-			if (_textChangeReason is not OmnibarTextChangeReason.SuggestionChosen and
-				not OmnibarTextChangeReason.ProgrammaticChange)
+			if (_textChangeReason is OmnibarTextChangeReason.ProgrammaticChange)
+				_textBox.SelectAll();
+			else
 			{
-				_textChangeReason = OmnibarTextChangeReason.UserInput;
 				_userInput = _textBox.Text;
 			}
 
@@ -136,6 +143,7 @@ namespace Files.App.Controls
 
 		private void AutoSuggestBoxSuggestionsPopup_GettingFocus(UIElement sender, GettingFocusEventArgs args)
 		{
+			// The suggestions popup is never wanted to be focused when it come to open.
 			args.TryCancel();
 		}
 

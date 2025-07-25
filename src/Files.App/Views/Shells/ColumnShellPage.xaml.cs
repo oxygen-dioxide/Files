@@ -4,9 +4,7 @@
 using CommunityToolkit.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using Windows.System;
 
 namespace Files.App.Views.Shells
 {
@@ -106,12 +104,6 @@ namespace Files.App.Views.Shells
 		{
 			ContentPage = await GetContentOrNullAsync();
 
-			if (!ToolbarViewModel.SearchBox.WasQuerySubmitted)
-			{
-				ToolbarViewModel.SearchBox.Query = string.Empty;
-				ToolbarViewModel.IsSearchBoxVisible = false;
-			}
-
 			if (ItemDisplayFrame.CurrentSourcePageType == typeof(ColumnLayoutPage))
 			{
 				// Reset DataGrid Rows that may be in "cut" command mode
@@ -124,29 +116,6 @@ namespace Files.App.Views.Shells
 				InitialPageType = typeof(ColumnShellPage),
 				NavigationParameter = parameters.IsSearchResultPage ? parameters.SearchPathParam : parameters.NavPathParam
 			};
-		}
-
-		private async void KeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-		{
-			args.Handled = true;
-			var tabInstance =
-				CurrentPageType == typeof(DetailsLayoutPage) ||
-				CurrentPageType == typeof(GridLayoutPage) ||
-				CurrentPageType == typeof(ColumnsLayoutPage) ||
-				CurrentPageType == typeof(ColumnLayoutPage);
-
-			var ctrl = args.KeyboardAccelerator.Modifiers.HasFlag(VirtualKeyModifiers.Control);
-			var shift = args.KeyboardAccelerator.Modifiers.HasFlag(VirtualKeyModifiers.Shift);
-			var alt = args.KeyboardAccelerator.Modifiers.HasFlag(VirtualKeyModifiers.Menu);
-
-			switch (c: ctrl, s: shift, a: alt, t: tabInstance, k: args.KeyboardAccelerator.Key)
-			{
-				// Ctrl + V, Paste
-				case (true, false, false, true, VirtualKey.V):
-					if (!ToolbarViewModel.IsEditModeEnabled && !ContentPage.IsRenamingItem && !InstanceViewModel.IsPageTypeSearchResults && !ToolbarViewModel.SearchHasFocus)
-						await UIFilesystemHelpers.PasteItemAsync(ShellViewModel.WorkingDirectory, this);
-					break;
-			}
 		}
 
 		public override void Back_Click()
@@ -184,7 +153,7 @@ namespace Files.App.Views.Shells
 		{
 			this.FindAscendant<ColumnsLayoutPage>()?.ParentShellPageInstance?.NavigateHome();
 		}
-		
+
 		public override void NavigateToReleaseNotes()
 		{
 			this.FindAscendant<ColumnsLayoutPage>()?.ParentShellPageInstance?.NavigateToReleaseNotes();

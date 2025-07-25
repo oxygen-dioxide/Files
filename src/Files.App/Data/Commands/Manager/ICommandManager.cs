@@ -32,6 +32,7 @@ namespace Files.App.Data.Commands
 		IRichCommand ToggleInfoPane { get; }
 		IRichCommand ToggleToolbar { get; }
 		IRichCommand ToggleShelfPane { get; }
+		IRichCommand ToggleFilterHeader { get; }
 
 		IRichCommand CopyItem { get; }
 		IRichCommand CopyItemPath { get; }
@@ -122,7 +123,7 @@ namespace Files.App.Data.Commands
 		IRichCommand LayoutIncreaseSize { get; }
 		IRichCommand LayoutDetails { get; }
 		IRichCommand LayoutList { get; }
-		IRichCommand LayoutCards{ get; }
+		IRichCommand LayoutCards { get; }
 		IRichCommand LayoutGrid { get; }
 		IRichCommand LayoutColumns { get; }
 		IRichCommand LayoutAdaptive { get; }
