@@ -15,7 +15,7 @@ using IO = System.IO;
 
 namespace Files.App.Utils.Storage
 {
-    public sealed partial class AnsiZipStorageFolder : BaseStorageFolder, ICreateFileWithStream, IPasswordProtectedItem
+    public sealed partial class AnsiZipStorageFolder : BaseStorageFolder, IPasswordProtectedItem
     {
         private readonly string containerPath;
         private BaseStorageFile backingFile;
@@ -24,7 +24,7 @@ namespace Files.App.Utils.Storage
         public override string Path { get; }
         public override string Name { get; }
         public override string DisplayName => Name;
-        public override string DisplayType => Strings.Folder.GetLocalizedResource(); // Assuming Strings.Folder exists
+        public override string DisplayType => Strings.Folder.GetLocalizedResource();
         public override string FolderRelativeId => $"0\\{Name}";
 
         public override DateTimeOffset DateCreated { get; }
@@ -183,49 +183,18 @@ namespace Files.App.Utils.Storage
         }
 
 
-        private async Task<BaseBasicProperties> GetFolderPropertiesFromEntry()
+        private async Task<BaseBasicProperties> GetBasicProperties()
         {
-            ZipFile zipFile = null;
-            try
+            using ZipFile zipFile = await OpenZipFileAsync(FileAccess.Read);
+            if (zipFile is null)
             {
-                zipFile = await OpenZipFileAsync(FileAccess.Read);
-                if (zipFile is null) return new BaseBasicProperties();
-
-                // Path for a folder entry in zip usually ends with "/"
-                // We need to find the entry that matches this folder's path relative to the container.
-                var relativePath = IO.Path.GetRelativePath(containerPath, Path.TrimEnd('\\', '/')).Replace('\\', '/');
-                if (!string.IsNullOrEmpty(relativePath) && !relativePath.EndsWith('/'))
-                {
-                    relativePath += "/";
-                }
-                else if (string.IsNullOrEmpty(relativePath)) // Root of archive, represented by backing file
-                {
-                     if (backingFile != null) return await backingFile.GetBasicPropertiesAsync();
-                     var fileInfo = new FileInfo(containerPath);
-                     return new BaseBasicProperties(
-                         (ulong)fileInfo.Length, // Size
-                         fileInfo.LastWriteTimeUtc, // DateModified
-                         DateTimeOffset.MinValue, // ItemDate | typically not used for folders like this
-                         fileInfo.CreationTimeUtc // DateCreated
-                     );
-                }
-
-
-                ZipEntry entry = zipFile.GetEntry(relativePath);
-
-                return entry is null
-                    ? new BaseBasicProperties() // Or throw if entry must exist
-                    : new AnsiZipFolderBasicProperties(entry);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error in GetFolderPropertiesFromEntry: {ex.Message}");
                 return new BaseBasicProperties();
             }
-            finally
-            {
-                zipFile?.Close();
-            }
+            //zipFile.IsStreamOwner = true;
+            var entry = zipFile.GetEntry(Path.Substring(containerPath.Length + 1).Replace('\\', '/'));
+            return entry is null
+                ? new BaseBasicProperties()
+                : new AnsiZipFolderBasicProperties(entry);
         }
 
         public override IAsyncOperation<BaseBasicProperties> GetBasicPropertiesAsync()
@@ -234,70 +203,39 @@ namespace Files.App.Utils.Storage
             {
                 if (Path == containerPath) // This is the root zip file itself
                 {
-                    if (backingFile is not null)
-                        return await backingFile.GetBasicPropertiesAsync();
-                    
-                    // Fallback to direct file system access for the archive file itself
-                    var fsFile = await StorageFile.GetFileFromPathAsync(containerPath);
-                    return await new SystemStorageFile(fsFile).GetBasicPropertiesAsync();
+                    var zipFile = new SystemStorageFile(await StorageFile.GetFileFromPathAsync(Path));
+					return await zipFile.GetBasicPropertiesAsync();
                 }
-                return await GetFolderPropertiesFromEntry();
+                return await GetBasicProperties();
             });
         }
 
 
         public override IAsyncOperation<IStorageItem> GetItemAsync(string name)
         {
-            return AsyncInfo.Run(async (cancellationToken) =>
-                await SafetyExtensions.Wrap<IStorageItem>(async () =>
+            return AsyncInfo.Run((cancellationToken) => SafetyExtensions.Wrap<IStorageItem>(async () =>
+            {
+                using ZipFile zipFile = await OpenZipFileAsync(FileAccess.Read);
+                if (zipFile is null)
                 {
-                    ZipFile zipFile = null;
-                    try
-                    {
-                        zipFile = await OpenZipFileAsync(FileAccess.Read);
-                        if (zipFile is null) return null;
-
-                        var itemPathInsideArchive = ZipPathCombine(IO.Path.GetRelativePath(containerPath, Path), name).Replace('\\', '/');
-                        ZipEntry entry = zipFile.GetEntry(itemPathInsideArchive);
-
-                        if (entry is null)
-                        {
-                            // It might be an implicit directory (a file exists like "folder/file.txt" but "folder/" entry doesn't)
-                            // Let's check if any entry starts with this path + "/"
-                            var directoryPathInsideArchive = itemPathInsideArchive.TrimEnd('/') + "/";
-                            if (zipFile.Cast<ZipEntry>().Any(e => e.Name.StartsWith(directoryPathInsideArchive, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                // Create a synthetic ZipEntry for the folder or find the explicit one if it exists
-                                var explicitFolderEntry = zipFile.GetEntry(directoryPathInsideArchive);
-                                var folderFullPath = IO.Path.Combine(Path, name);
-                                var folder = new AnsiZipStorageFolder(folderFullPath, containerPath, explicitFolderEntry ?? new ZipEntry(directoryPathInsideArchive) { IsDirectory = true, DateTime = DateTime.UtcNow }, backingFile, encoding);
-                                ((IPasswordProtectedItem)folder).CopyFrom(this);
-                                return folder;
-                            }
-                            return null;
-                        }
-
-
-                        var fullItemPath = IO.Path.Combine(Path, name);
-                        if (entry.IsDirectory)
-                        {
-                            var folder = new AnsiZipStorageFolder(fullItemPath, containerPath, entry, backingFile, encoding);
-                            ((IPasswordProtectedItem)folder).CopyFrom(this);
-                            return folder;
-                        }
-                        else
-                        {
-                            var file = new AnsiZipStorageFile(fullItemPath, containerPath, entry, backingFile, encoding);
-                            ((IPasswordProtectedItem)file).CopyFrom(this);
-                            return file;
-                        }
-                    }
-                    finally
-                    {
-                        zipFile?.Close();
-                    }
-                }, ((IPasswordProtectedItem)this).RetryWithCredentialsAsync) // Assuming SafetyExtensions and Retry exist
-            );
+                    return null;
+                }
+                var filePath = System.IO.Path.Combine(Path, name);
+                var entry = zipFile.GetEntry(System.IO.Path.GetRelativePath(containerPath, filePath));
+                if (entry is null)
+                {
+                    return null;
+                }
+                if (entry.IsDirectory)
+                {
+                    var folder = new AnsiZipStorageFolder(filePath, containerPath, entry, backingFile);
+                    ((IPasswordProtectedItem)folder).CopyFrom(this);
+                    return folder;
+                }
+                var file = new AnsiZipStorageFile(filePath, containerPath, entry, backingFile);
+                ((IPasswordProtectedItem)file).CopyFrom(this);
+                return file;
+            }, ((IPasswordProtectedItem)this).RetryWithCredentialsAsync));
         }
 
         public override IAsyncOperation<IStorageItem> TryGetItemAsync(string name)
@@ -314,7 +252,7 @@ namespace Files.App.Utils.Storage
                 }
             });
         }
-        
+
         // Helper to combine paths for Zip archives (always use '/')
         private string ZipPathCombine(string path1, string path2)
         {
@@ -367,7 +305,7 @@ namespace Files.App.Utils.Storage
                                     {
                                         // Find the explicit entry for the folder if it exists
                                         var folderEntryPath = currentRelativePath + itemName + "/";
-                                        var folderEntry = zipFile.GetEntry(folderEntryPath) ?? new ZipEntry(folderEntryPath) { IsDirectory = true, DateTime = entry.DateTime};
+                                        var folderEntry = zipFile.GetEntry(folderEntryPath) ?? new ZipEntry(folderEntryPath) { IsDirectory = true, DateTime = entry.DateTime };
 
                                         var folder = new AnsiZipStorageFolder(fullItemPath, containerPath, folderEntry, backingFile, encoding);
                                         ((IPasswordProtectedItem)folder).CopyFrom(this);
@@ -403,10 +341,10 @@ namespace Files.App.Utils.Storage
 
         public override IAsyncOperation<IReadOnlyList<BaseStorageFile>> GetFilesAsync()
             => AsyncInfo.Run<IReadOnlyList<BaseStorageFile>>(async (cancellationToken) => (await GetItemsAsync())?.OfType<AnsiZipStorageFile>().ToList());
-        
+
         public override IAsyncOperation<IReadOnlyList<BaseStorageFile>> GetFilesAsync(CommonFileQuery query)
             => GetFilesAsync(); // No special query handling for zip
-        
+
         public override IAsyncOperation<IReadOnlyList<BaseStorageFile>> GetFilesAsync(CommonFileQuery query, uint startIndex, uint maxItemsToRetrieve)
             => AsyncInfo.Run<IReadOnlyList<BaseStorageFile>>(async (cancellationToken)
                 => (await GetFilesAsync()).Skip((int)startIndex).Take((int)maxItemsToRetrieve).ToList()
@@ -414,10 +352,10 @@ namespace Files.App.Utils.Storage
 
         public override IAsyncOperation<BaseStorageFolder> GetFolderAsync(string name)
             => AsyncInfo.Run<BaseStorageFolder>(async (cancellationToken) => await GetItemAsync(name) as AnsiZipStorageFolder);
-        
+
         public override IAsyncOperation<IReadOnlyList<BaseStorageFolder>> GetFoldersAsync()
             => AsyncInfo.Run<IReadOnlyList<BaseStorageFolder>>(async (cancellationToken) => (await GetItemsAsync())?.OfType<AnsiZipStorageFolder>().ToList());
-        
+
         public override IAsyncOperation<IReadOnlyList<BaseStorageFolder>> GetFoldersAsync(CommonFolderQuery query)
             => GetFoldersAsync();  // No special query handling for zip
 
@@ -436,7 +374,7 @@ namespace Files.App.Utils.Storage
 
         public IAsyncOperation<BaseStorageFile> CreateFileAsync(Stream contents, string desiredName, CreationCollisionOption options)
         {
-            return AsyncInfo.Run( (cancellationToken) => SafetyExtensions.Wrap<BaseStorageFile>(async () =>
+            return AsyncInfo.Run((cancellationToken) => SafetyExtensions.Wrap<BaseStorageFile>(async () =>
             {
                 var relativePath = IO.Path.GetRelativePath(containerPath, Path);
                 var entryPath = ZipPathCombine(relativePath, desiredName);
@@ -459,11 +397,11 @@ namespace Files.App.Utils.Storage
                         }
                         else if (originalStream == null)
                         {
-                             throw new FileNotFoundException("Archive stream could not be opened.");
+                            throw new FileNotFoundException("Archive stream could not be opened.");
                         }
-                        
-                        if(originalStream != null) // Copy existing to temp if it exists
-                           await originalStream.CopyToAsync(File.Create(tempFilePath));
+
+                        if (originalStream != null) // Copy existing to temp if it exists
+                            await originalStream.CopyToAsync(File.Create(tempFilePath));
                     }
 
                     zipFile = new ZipFile(tempFilePath); // Open for update
@@ -495,12 +433,12 @@ namespace Files.App.Utils.Storage
                         DateTime = DateTime.Now,
                         IsUnicodeText = (encoding.Equals(Encoding.UTF8)) // Use UTF-8 flag if encoding is UTF-8
                     };
-                    
+
                     // To add content, SharpZipLib needs a source.
                     // IDataSource allows for more complex scenarios, StreamDataSource is simple.
                     var dataSource = new StreamDataSource(contents);
                     zipFile.Add(dataSource, newEntry); // Add with specific entry details
-                    
+
                     zipFile.CommitUpdate();
                     zipFile.Close(); // Close to flush changes to tempFilePath
                     zipFile = null; // Ensure it's not used further
@@ -526,7 +464,7 @@ namespace Files.App.Utils.Storage
                     System.Diagnostics.Debug.WriteLine($"Error creating file in zip: {ex.Message}");
                     if (options == CreationCollisionOption.FailIfExists && ex is ZipException ze && ze.Message.ToLowerInvariant().Contains("already exists"))
                     {
-                         return null; // Or rethrow as specific exception
+                        return null; // Or rethrow as specific exception
                     }
                     throw; // Rethrow to be caught by SafetyExtensions if needed
                 }
@@ -548,7 +486,7 @@ namespace Files.App.Utils.Storage
 
         public override IAsyncOperation<BaseStorageFolder> CreateFolderAsync(string desiredName, CreationCollisionOption options)
         {
-            return AsyncInfo.Run( (cancellationToken) => SafetyExtensions.Wrap<BaseStorageFolder>(async () =>
+            return AsyncInfo.Run((cancellationToken) => SafetyExtensions.Wrap<BaseStorageFolder>(async () =>
             {
                 var relativePath = IO.Path.GetRelativePath(containerPath, Path);
                 var entryPath = ZipPathCombine(relativePath, desiredName).TrimEnd('/') + "/"; // Folder entries must end with '/'
@@ -561,9 +499,9 @@ namespace Files.App.Utils.Storage
                     tempFilePath = IO.Path.GetTempFileName();
                     using (var originalStream = await OpenZipStreamAsync(FileAccessMode.Read))
                     {
-                         if (originalStream != null) 
+                        if (originalStream != null)
                             await originalStream.CopyToAsync(File.Create(tempFilePath));
-                         // else, new archive, tempFilePath will be empty initially
+                        // else, new archive, tempFilePath will be empty initially
                     }
 
 
@@ -588,7 +526,7 @@ namespace Files.App.Utils.Storage
                             zipFile.Delete(existingEntry);
                         }
                     }
-                    
+
                     var newEntry = new ZipEntry(entryPath)
                     {
                         DateTime = DateTime.Now,
@@ -619,16 +557,16 @@ namespace Files.App.Utils.Storage
                 catch (Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine($"Error creating folder in zip: {ex.Message}");
-                     if (options == CreationCollisionOption.FailIfExists && ex is ZipException ze && ze.Message.ToLowerInvariant().Contains("already exists"))
+                    if (options == CreationCollisionOption.FailIfExists && ex is ZipException ze && ze.Message.ToLowerInvariant().Contains("already exists"))
                     {
-                         return null; 
+                        return null;
                     }
                     throw;
                 }
                 finally
                 {
                     zipFile?.Close();
-                     if (tempFilePath != null && File.Exists(tempFilePath))
+                    if (tempFilePath != null && File.Exists(tempFilePath))
                     {
                         File.Delete(tempFilePath);
                     }
@@ -663,14 +601,14 @@ namespace Files.App.Utils.Storage
                 // Renaming an item INSIDE the zip
                 // This is complex: requires rebuilding the archive by copying entries,
                 // renaming the target entry/entries, and skipping the old ones.
-                
+
                 string oldRelativePath = IO.Path.GetRelativePath(containerPath, Path).Replace('\\', '/');
                 if (!oldRelativePath.EndsWith('/')) oldRelativePath += "/"; // Ensure it's a directory path for matching children
 
                 string parentDirectoryPath = IO.Path.GetDirectoryName(Path);
                 string newAbsolutePath = IO.Path.Combine(parentDirectoryPath, desiredName);
                 string newRelativePath = IO.Path.GetRelativePath(containerPath, newAbsolutePath).Replace('\\', '/');
-                 if (!newRelativePath.EndsWith('/')) newRelativePath += "/";
+                if (!newRelativePath.EndsWith('/')) newRelativePath += "/";
 
 
                 ZipFile zipFile = null;
@@ -698,7 +636,7 @@ namespace Files.App.Utils.Storage
                     {
                         zipFile.Password = Credentials.Password;
                         zipFile.StringCodec = StringCodec.FromEncoding(encoding);
-                        
+
                         zipOutStream.Password = Credentials.Password;
                         zipOutStream.SetLevel(5); // Default compression
                         ((ZipOutputStream)zipOutStream).StringCodec = StringCodec.FromEncoding(encoding);
@@ -803,15 +741,15 @@ namespace Files.App.Utils.Storage
                 // For folders, ensure it ends with a slash to correctly identify as a prefix for its contents
                 if ((await GetBasicPropertiesAsync()).Size == 0 && !relativePathToDelete.EndsWith("/")) // Heuristic for folder
                 {
-                     // Check if it's a directory by trying to get it as a folder object or checking attributes
-                     var item = await TryGetItemAsync(Name); // This is tricky, Name is the last segment of Path
-                     // A better way: check if Path represents a directory syntactically or via a prior GetItem call.
-                     // For now, assume if it doesn't end with '/', it's a file unless known to be a dir.
-                     // This logic is simplified; proper folder detection is needed.
-                     // If it's a folder, it should end with '/' for SharpZipLib entry matching.
-                     // Let's assume Path is already correct for a folder (ends with /) or it's a file.
-                     // Based on the original logic, it seems `Path` is the full path to the item to delete.
-                     // We need its relative path to the container.
+                    // Check if it's a directory by trying to get it as a folder object or checking attributes
+                    var item = await TryGetItemAsync(Name); // This is tricky, Name is the last segment of Path
+                                                            // A better way: check if Path represents a directory syntactically or via a prior GetItem call.
+                                                            // For now, assume if it doesn't end with '/', it's a file unless known to be a dir.
+                                                            // This logic is simplified; proper folder detection is needed.
+                                                            // If it's a folder, it should end with '/' for SharpZipLib entry matching.
+                                                            // Let's assume Path is already correct for a folder (ends with /) or it's a file.
+                                                            // Based on the original logic, it seems `Path` is the full path to the item to delete.
+                                                            // We need its relative path to the container.
                 }
                 // Ensure folder paths end with '/' for matching in SharpZipLib
                 bool isLikelyDirectory = this.Attributes.HasFlag(Windows.Storage.FileAttributes.Directory) || relativePathToDelete.EndsWith("/");
@@ -838,13 +776,13 @@ namespace Files.App.Utils.Storage
                     zipFile.StringCodec = StringCodec.FromEncoding(encoding);
 
                     zipFile.BeginUpdate();
-                    
+
                     var entriesToDelete = new List<ZipEntry>();
-                    if(isLikelyDirectory)
+                    if (isLikelyDirectory)
                     {
-                        foreach(ZipEntry entry in zipFile)
+                        foreach (ZipEntry entry in zipFile)
                         {
-                            if(entry.Name.Replace('\\', '/').StartsWith(relativePathToDelete, StringComparison.OrdinalIgnoreCase))
+                            if (entry.Name.Replace('\\', '/').StartsWith(relativePathToDelete, StringComparison.OrdinalIgnoreCase))
                             {
                                 entriesToDelete.Add(entry);
                             }
@@ -853,20 +791,20 @@ namespace Files.App.Utils.Storage
                     else
                     {
                         var entry = zipFile.GetEntry(relativePathToDelete);
-                        if(entry != null) entriesToDelete.Add(entry);
+                        if (entry != null) entriesToDelete.Add(entry);
                     }
 
 
                     if (entriesToDelete.Count == 0 && option != StorageDeleteOption.PermanentDelete) // Or if item must exist
                     {
-                       // Potentially throw if item not found, or silently succeed.
-                       // Original code does not throw if index is empty.
-                       System.Diagnostics.Debug.WriteLine($"Item '{Path}' not found in zip for deletion.");
-                       zipFile.AbortUpdate(); // No changes needed
-                       return; 
+                        // Potentially throw if item not found, or silently succeed.
+                        // Original code does not throw if index is empty.
+                        System.Diagnostics.Debug.WriteLine($"Item '{Path}' not found in zip for deletion.");
+                        zipFile.AbortUpdate(); // No changes needed
+                        return;
                     }
-                    
-                    foreach(var entry in entriesToDelete)
+
+                    foreach (var entry in entriesToDelete)
                     {
                         zipFile.Delete(entry);
                     }
@@ -918,13 +856,13 @@ namespace Files.App.Utils.Storage
                 {
                     // For virtual folders inside, try to get a generic folder icon
                     var genericFolder = await StorageFolder.GetFolderFromPathAsync( // This is a placeholder path
-                        System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets") 
+                        System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")
                         ).AsTask().ConfigureAwait(false);
-                    if(genericFolder != null)
-                         return await genericFolder.GetThumbnailAsync(mode);
+                    if (genericFolder != null)
+                        return await genericFolder.GetThumbnailAsync(mode);
                     return null;
                 }
-                 if (backingFile != null && backingFile is IStorageFile actualFile) // If backingFile is a real file
+                if (backingFile != null && backingFile is IStorageFile actualFile) // If backingFile is a real file
                     return await actualFile.GetThumbnailAsync(mode);
 
                 var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path); // Path to the .zip file
@@ -933,39 +871,39 @@ namespace Files.App.Utils.Storage
         }
         public override IAsyncOperation<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode, uint requestedSize)
         {
-             return AsyncInfo.Run(async (cancellationToken) =>
-            {
-                if (Path != containerPath || backingFile == null)
-                {
-                     var genericFolder = await StorageFolder.GetFolderFromPathAsync(System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")).AsTask().ConfigureAwait(false);
-                     if(genericFolder != null)
-                         return await genericFolder.GetThumbnailAsync(mode, requestedSize);
-                    return null;
-                }
-                if (backingFile != null && backingFile is IStorageFile actualFile)
-                    return await actualFile.GetThumbnailAsync(mode, requestedSize);
+            return AsyncInfo.Run(async (cancellationToken) =>
+           {
+               if (Path != containerPath || backingFile == null)
+               {
+                   var genericFolder = await StorageFolder.GetFolderFromPathAsync(System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")).AsTask().ConfigureAwait(false);
+                   if (genericFolder != null)
+                       return await genericFolder.GetThumbnailAsync(mode, requestedSize);
+                   return null;
+               }
+               if (backingFile != null && backingFile is IStorageFile actualFile)
+                   return await actualFile.GetThumbnailAsync(mode, requestedSize);
 
-                var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path);
-                return await zipStorageFile.GetThumbnailAsync(mode, requestedSize);
-            });
+               var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path);
+               return await zipStorageFile.GetThumbnailAsync(mode, requestedSize);
+           });
         }
         public override IAsyncOperation<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode, uint requestedSize, ThumbnailOptions options)
         {
-             return AsyncInfo.Run(async (cancellationToken) =>
-            {
-                if (Path != containerPath || backingFile == null)
-                {
-                    var genericFolder = await StorageFolder.GetFolderFromPathAsync(System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")).AsTask().ConfigureAwait(false);
-                     if(genericFolder != null)
-                        return await genericFolder.GetThumbnailAsync(mode, requestedSize, options);
-                    return null;
-                }
-                 if (backingFile != null && backingFile is IStorageFile actualFile)
-                    return await actualFile.GetThumbnailAsync(mode, requestedSize, options);
+            return AsyncInfo.Run(async (cancellationToken) =>
+           {
+               if (Path != containerPath || backingFile == null)
+               {
+                   var genericFolder = await StorageFolder.GetFolderFromPathAsync(System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")).AsTask().ConfigureAwait(false);
+                   if (genericFolder != null)
+                       return await genericFolder.GetThumbnailAsync(mode, requestedSize, options);
+                   return null;
+               }
+               if (backingFile != null && backingFile is IStorageFile actualFile)
+                   return await actualFile.GetThumbnailAsync(mode, requestedSize, options);
 
-                var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path);
-                return await zipStorageFile.GetThumbnailAsync(mode, requestedSize, options);
-            });
+               var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path);
+               return await zipStorageFile.GetThumbnailAsync(mode, requestedSize, options);
+           });
         }
 
 
@@ -983,7 +921,7 @@ namespace Files.App.Utils.Storage
                 }
                 catch (Exception ex)
                 {
-                     System.Diagnostics.Debug.WriteLine($"CheckAccessAsync for path '{path}' failed: {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"CheckAccessAsync for path '{path}' failed: {ex.Message}");
                     return false;
                 }
                 finally
@@ -1005,7 +943,9 @@ namespace Files.App.Utils.Storage
                     stream.CopyTo(ms);
                     ms.Position = 0;
                     stream = ms; // Replace with seekable memory stream
-                } else {
+                }
+                else
+                {
                     stream.Position = 0; // Reset position
                 }
 
@@ -1019,12 +959,12 @@ namespace Files.App.Utils.Storage
             catch (ZipException ze)
             {
                 // "Wrong Password?" or "Header checksum illegal" might indicate password issue or corruption
-                if (ze.Message.Contains("password", StringComparison.OrdinalIgnoreCase) || 
+                if (ze.Message.Contains("password", StringComparison.OrdinalIgnoreCase) ||
                     ze.Message.Contains("Header checksum", StringComparison.OrdinalIgnoreCase))
                     return true; // Still "accessible" in the sense that it's a zip, but needs password
                 return false; // Other ZipExceptions usually mean not a valid zip or badly corrupted
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"CheckAccess stream failed: {ex.Message}");
                 return false;
@@ -1128,7 +1068,7 @@ namespace Files.App.Utils.Storage
             }
             else
             {
-                 stream.Position = 0; // Ensure stream is at the beginning
+                stream.Position = 0; // Ensure stream is at the beginning
             }
 
 
@@ -1168,7 +1108,7 @@ namespace Files.App.Utils.Storage
                 }
             });
         }
-        
+
         // This helper is for StreamDataSource for SharpZipLib, making a stream "static" (non-disposing)
         private class StreamDataSource : IStaticDataSource
         {
@@ -1191,8 +1131,8 @@ namespace Files.App.Utils.Storage
 
         async Task<bool> IPasswordProtectedItem.IsPasswordCorrectAsync(string password)
         {
-             if (string.IsNullOrEmpty(password) && Credentials.IsPasswordEmpty) return true; // No password set, and none provided
-             if (string.IsNullOrEmpty(password)) return false; // Password expected but none provided
+            if (string.IsNullOrEmpty(password) && Credentials.IsPasswordEmpty) return true; // No password set, and none provided
+            if (string.IsNullOrEmpty(password)) return false; // Password expected but none provided
 
             Stream stream = null;
             try
@@ -1215,17 +1155,15 @@ namespace Files.App.Utils.Storage
 
         private sealed class AnsiZipFolderBasicProperties : BaseBasicProperties
         {
-            private readonly ZipEntry _entry;
+            private readonly ZipEntry entry;
 
-            public AnsiZipFolderBasicProperties(ZipEntry entry) => _entry = entry;
+            public AnsiZipFolderBasicProperties(ZipEntry entry) => this.entry = entry;
 
             // For folders in ZIP, size is often 0.
             // DateModified might be the only relevant field from ZipEntry.
-            public override ulong Size => _entry.IsDirectory ? 0 : (ulong)_entry.Size; // Typically 0 for directories in zip
-            public override DateTimeOffset DateModified => _entry.DateTime > DateTime.MinValue ? new DateTimeOffset(_entry.DateTime) : DateTimeOffset.MinValue;
-            public override DateTimeOffset ItemDate => DateTimeOffset.MinValue; // Not typically used for zip entries
-            // DateCreated is not reliably stored for individual entries in all zip formats/tools.
-            // Use DateModified as a fallback or a fixed value.
-            public override DateTimeOffset DateCreated => _entry.DateTime > DateTime.MinValue ? new DateTimeOffset(_entry.DateTime) : DateTimeOffset.MinValue;
+            public override ulong Size => entry.IsDirectory ? 0 : (ulong)entry.Size; // Typically 0 for directories in zip
+            public override DateTimeOffset DateModified => entry.DateTime > DateTime.MinValue ? new DateTimeOffset(entry.DateTime) : DateTimeOffset.MinValue;
+            public override DateTimeOffset DateCreated => entry.DateTime > DateTime.MinValue ? new DateTimeOffset(entry.DateTime) : DateTimeOffset.MinValue;
         }
     }
+}
