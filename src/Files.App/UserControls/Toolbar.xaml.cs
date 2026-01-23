@@ -83,7 +83,7 @@ namespace Files.App.UserControls
 			}
 		}
 
-		private void ZipEncodingList_Opening(object sender, object e)
+		/*private void ZipEncodingList_Opening(object sender, object e)
 		{
 			ZipEncodingList.Items.Clear();
 			var encodingItems = EncodingItem.Defaults;
@@ -101,7 +101,7 @@ namespace Files.App.UserControls
 				menuLayoutItem.CommandParameter = encodingItem.Encoding;
 				ZipEncodingList.Items.Insert(0, menuLayoutItem);
 			}
-		}
+		}*/
 		private void SortGroup_AccessKeyInvoked(UIElement sender, AccessKeyInvokedEventArgs args)
 		{
 			if (sender is MenuFlyoutSubItem menu)

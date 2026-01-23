@@ -49,22 +49,23 @@ namespace Files.App.Utils.Storage
         public StorageCredential Credentials { get; set; } = new();
 
         public Func<IPasswordProtectedItem, Task<StorageCredential>> PasswordRequestedCallback { get; set; }
+        public static Encoding DefaultZipEncoding { get; set; } = Encoding.UTF8;
 
-        public AnsiZipStorageFile(string path, string containerPath)
+        public AnsiZipStorageFile(string path, string containerPath, Encoding? encoding = null)
         {
             Name = IO.Path.GetFileName(path.TrimEnd('\\', '/'));
             Path = path;
             this.containerPath = containerPath;
-            this.encoding = Encoding.UTF8; // Default encoding
+            this.encoding = encoding ?? DefaultZipEncoding; // Default encoding
         }
 
-        public AnsiZipStorageFile(string path, string containerPath, BaseStorageFile backingFile) : this(path, containerPath)
+        public AnsiZipStorageFile(string path, string containerPath, BaseStorageFile backingFile, Encoding? encoding = null) : this(path, containerPath, encoding)
             => this.backingFile = backingFile;
 
-        public AnsiZipStorageFile(string path, string containerPath, ZipEntry entry) : this(path, containerPath)
-            => DateCreated = entry.CreationTime == DateTime.MinValue ? DateTimeOffset.MinValue : entry.CreationTime;
+        public AnsiZipStorageFile(string path, string containerPath, ZipEntry entry, Encoding? encoding = null) : this(path, containerPath, encoding)
+            => DateCreated = DateTimeOffset.MinValue;
 
-        public AnsiZipStorageFile(string path, string containerPath, ZipEntry entry, BaseStorageFile backingFile) : this(path, containerPath, entry)
+        public AnsiZipStorageFile(string path, string containerPath, ZipEntry entry, BaseStorageFile backingFile, Encoding? encoding = null) : this(path, containerPath, entry, encoding)
             => this.backingFile = backingFile;
 
         public override IAsyncOperation<StorageFile> ToStorageFileAsync()
@@ -524,6 +525,7 @@ namespace Files.App.Utils.Storage
             public AnsiZipFileBasicProperties(ZipEntry entry) => this.entry = entry;
 
             public override DateTimeOffset DateModified => entry.DateTime;
+            public override DateTimeOffset DateCreated => DateTimeOffset.MinValue;
 
             public override ulong Size => (ulong)entry.Size;
         }

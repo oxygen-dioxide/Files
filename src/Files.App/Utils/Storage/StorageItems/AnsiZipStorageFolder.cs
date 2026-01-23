@@ -42,8 +42,8 @@ namespace Files.App.Utils.Storage
         {
             Name = IO.Path.GetFileName(path.TrimEnd('\\', '/'));
             Path = path;
-            containerPath = containerPath;
-            encoding = encoding ?? DefaultZipEncoding;
+            this.containerPath = containerPath;
+            this.encoding = encoding ?? DefaultZipEncoding;
             // DateCreated for root is typically the file's date, handled in GetBasicPropertiesAsync
         }
 
@@ -305,7 +305,7 @@ namespace Files.App.Utils.Storage
                                     {
                                         // Find the explicit entry for the folder if it exists
                                         var folderEntryPath = currentRelativePath + itemName + "/";
-                                        var folderEntry = zipFile.GetEntry(folderEntryPath) ?? new ZipEntry(folderEntryPath) { IsDirectory = true, DateTime = entry.DateTime };
+                                        var folderEntry = zipFile.GetEntry(folderEntryPath) ?? new ZipEntry(folderEntryPath) { DateTime = entry.DateTime };
 
                                         var folder = new AnsiZipStorageFolder(fullItemPath, containerPath, folderEntry, backingFile, encoding);
                                         ((IPasswordProtectedItem)folder).CopyFrom(this);
@@ -530,7 +530,7 @@ namespace Files.App.Utils.Storage
                     var newEntry = new ZipEntry(entryPath)
                     {
                         DateTime = DateTime.Now,
-                        IsDirectory = true, // Important!
+                        //IsDirectory = true, // SharpZipLib's IsDirectory is read-only, determined by name ending with '/'
                         IsUnicodeText = (encoding.Equals(Encoding.UTF8))
                     };
                     zipFile.Add(newEntry); // Add directory entry
@@ -581,13 +581,13 @@ namespace Files.App.Utils.Storage
         public override IAsyncAction RenameAsync(string desiredName) => RenameAsync(desiredName, NameCollisionOption.FailIfExists);
         public override IAsyncAction RenameAsync(string desiredName, NameCollisionOption option)
         {
-            return AsyncInfo.Run(async (cancellationToken) => await SafetyExtensions.WrapAsync(async () =>
+            return AsyncInfo.Run((cancellationToken) => SafetyExtensions.WrapAsync(async () =>
             {
                 if (Path == containerPath) // Renaming the archive file itself
                 {
                     if (backingFile is not null)
                     {
-                        await backingFile.RenameAsync(desiredName, option.ToWindowsNameCollisionOption());
+                        await backingFile.RenameAsync(desiredName, option);
                     }
                     else
                     {
@@ -597,11 +597,13 @@ namespace Files.App.Utils.Storage
                     // Update internal paths if successful (not shown here, complex state management)
                     return;
                 }
+				throw new NotSupportedException("Renaming files inside ZIP archives is not supported yet.");
+				// TODO
 
                 // Renaming an item INSIDE the zip
                 // This is complex: requires rebuilding the archive by copying entries,
                 // renaming the target entry/entries, and skipping the old ones.
-
+				/*
                 string oldRelativePath = IO.Path.GetRelativePath(containerPath, Path).Replace('\\', '/');
                 if (!oldRelativePath.EndsWith('/')) oldRelativePath += "/"; // Ensure it's a directory path for matching children
 
@@ -672,7 +674,7 @@ namespace Files.App.Utils.Storage
                             {
                                 using (var entryStream = zipFile.GetInputStream(entry))
                                 {
-                                    await StreamUtils.CopyAsync(entryStream, zipOutStream, new byte[4096], cancellationToken);
+                                    StreamUtils.Copy(entryStream, zipOutStream, new byte[4096]);
                                 }
                             }
                             zipOutStream.CloseEntry();
@@ -708,7 +710,7 @@ namespace Files.App.Utils.Storage
                     zipFile?.Close();
                     if (File.Exists(tempInputFilePath)) File.Delete(tempInputFilePath);
                     if (File.Exists(tempOutputFilePath)) File.Delete(tempOutputFilePath);
-                }
+                }*/
 
             }, ((IPasswordProtectedItem)this).RetryWithCredentialsAsync));
         }
@@ -848,63 +850,43 @@ namespace Files.App.Utils.Storage
         public override StorageFolderQueryResult CreateFolderQuery(CommonFolderQuery query) => throw new NotSupportedException();
         public override BaseStorageFolderQueryResult CreateFolderQueryWithOptions(QueryOptions queryOptions) => new(this, queryOptions); // Assuming BaseStorageFolderQueryResult exists
 
+
         public override IAsyncOperation<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode)
-        {
-            return AsyncInfo.Run(async (cancellationToken) =>
-            {
-                if (Path != containerPath || backingFile == null) // Thumbnails only for the archive file itself
-                {
-                    // For virtual folders inside, try to get a generic folder icon
-                    var genericFolder = await StorageFolder.GetFolderFromPathAsync( // This is a placeholder path
-                        System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")
-                        ).AsTask().ConfigureAwait(false);
-                    if (genericFolder != null)
-                        return await genericFolder.GetThumbnailAsync(mode);
-                    return null;
-                }
-                if (backingFile != null && backingFile is IStorageFile actualFile) // If backingFile is a real file
-                    return await actualFile.GetThumbnailAsync(mode);
-
-                var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path); // Path to the .zip file
-                return await zipStorageFile.GetThumbnailAsync(mode);
-            });
-        }
+		{
+			return AsyncInfo.Run(async (cancellationToken) =>
+			{
+				if (Path != containerPath)
+				{
+					return null;
+				}
+				var zipFile = await StorageFile.GetFileFromPathAsync(Path);
+				return await zipFile.GetThumbnailAsync(mode);
+			});
+		}
         public override IAsyncOperation<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode, uint requestedSize)
-        {
-            return AsyncInfo.Run(async (cancellationToken) =>
-           {
-               if (Path != containerPath || backingFile == null)
-               {
-                   var genericFolder = await StorageFolder.GetFolderFromPathAsync(System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")).AsTask().ConfigureAwait(false);
-                   if (genericFolder != null)
-                       return await genericFolder.GetThumbnailAsync(mode, requestedSize);
-                   return null;
-               }
-               if (backingFile != null && backingFile is IStorageFile actualFile)
-                   return await actualFile.GetThumbnailAsync(mode, requestedSize);
-
-               var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path);
-               return await zipStorageFile.GetThumbnailAsync(mode, requestedSize);
-           });
-        }
-        public override IAsyncOperation<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode, uint requestedSize, ThumbnailOptions options)
-        {
-            return AsyncInfo.Run(async (cancellationToken) =>
-           {
-               if (Path != containerPath || backingFile == null)
-               {
-                   var genericFolder = await StorageFolder.GetFolderFromPathAsync(System.IO.Path.Combine(Package.Current.InstalledLocation.Path, "Assets")).AsTask().ConfigureAwait(false);
-                   if (genericFolder != null)
-                       return await genericFolder.GetThumbnailAsync(mode, requestedSize, options);
-                   return null;
-               }
-               if (backingFile != null && backingFile is IStorageFile actualFile)
-                   return await actualFile.GetThumbnailAsync(mode, requestedSize, options);
-
-               var zipStorageFile = await StorageFile.GetFileFromPathAsync(Path);
-               return await zipStorageFile.GetThumbnailAsync(mode, requestedSize, options);
-           });
-        }
+		{
+			return AsyncInfo.Run(async (cancellationToken) =>
+			{
+				if (Path != containerPath)
+				{
+					return null;
+				}
+				var zipFile = await StorageFile.GetFileFromPathAsync(Path);
+				return await zipFile.GetThumbnailAsync(mode, requestedSize);
+			});
+		}
+		public override IAsyncOperation<StorageItemThumbnail> GetThumbnailAsync(ThumbnailMode mode, uint requestedSize, ThumbnailOptions options)
+		{
+			return AsyncInfo.Run(async (cancellationToken) =>
+			{
+				if (Path != containerPath)
+				{
+					return null;
+				}
+				var zipFile = await StorageFile.GetFileFromPathAsync(Path);
+				return await zipFile.GetThumbnailAsync(mode, requestedSize, options);
+			});
+		}
 
 
         private static async Task<bool> CheckAccessAsync(string path, Encoding encoding)
@@ -991,67 +973,6 @@ namespace Files.App.Utils.Storage
             });
         }
 
-
-        public static Task<bool> InitArchive(string path, Encoding encoding) // Simplified, format is always Zip
-        {
-            return SafetyExtensions.IgnoreExceptions(async () =>
-            {
-                FileStream stream = null;
-                try
-                {
-                    // Create or truncate the file
-                    stream = new FileStream(path, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
-                    return await InitArchive(stream, encoding);
-                }
-                finally
-                {
-                    stream?.Dispose();
-                }
-            });
-        }
-        public static Task<bool> InitArchive(IStorageFile file, Encoding encoding)
-        {
-            return SafetyExtensions.IgnoreExceptions(async () =>
-            {
-                using var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite);
-                await using var stream = fileStream.AsStream(); // .NET stream, ensure it's seekable or wrap
-                return await InitArchive(stream, encoding);
-            });
-        }
-        private static async Task<bool> InitArchive(Stream stream, Encoding encoding)
-        {
-            // Ensure stream is seekable and writable
-            if (!stream.CanSeek) throw new ArgumentException("Stream must be seekable for initializing Zip archive.", nameof(stream));
-            if (!stream.CanWrite) throw new ArgumentException("Stream must be writable for initializing Zip archive.", nameof(stream));
-
-            stream.SetLength(0); // Clear the stream/file
-            ZipFile zipFile = null;
-            try
-            {
-                // The simplest way to create an empty valid zip is to use ZipOutputStream
-                // and just Finish it. Or ZipFile.Create, BeginUpdate, CommitUpdate.
-                using (var zipOut = new ZipOutputStream(stream))
-                {
-                    ((ZipOutputStream)zipOut).IsStreamOwner = false; // We manage the input stream
-                    ((ZipOutputStream)zipOut).StringCodec = StringCodec.FromEncoding(encoding);
-                    zipOut.SetLevel(0); // No compression for an empty archive
-                    zipOut.Finish(); // Writes EOCD record
-                }
-                await stream.FlushAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error initializing archive: {ex.Message}");
-                return false;
-            }
-            finally
-            {
-                // zipFile?.Close(); // ZipOutputStream handles its own closing/finishing
-            }
-        }
-
-
         private async Task<ZipFile> OpenZipFileAsync(FileAccess desiredAccess)
         {
             Stream stream = await OpenZipStreamAsync(desiredAccess == FileAccess.ReadWrite || desiredAccess == FileAccess.Write ? FileAccessMode.ReadWrite : FileAccessMode.Read);
@@ -1118,40 +1039,6 @@ namespace Files.App.Utils.Storage
         }
 
 
-        // Removed FetchZipIndex as SharpZipLib operations (like Delete with Begin/CommitUpdate)
-        // often handle indexing internally or operate on entry names.
-        // If specific index-based modification was key to 7zip's ModifyArchive, that paradigm is different.
-
-        // IPasswordProtectedItem implementation
-        void IPasswordProtectedItem.CopyFrom(IPasswordProtectedItem دیگر)
-        {
-            this.Credentials = new StorageCredential(دیگر.Credentials?.Password);
-            this.PasswordRequestedCallback = دیگر.PasswordRequestedCallback;
-        }
-
-        async Task<bool> IPasswordProtectedItem.IsPasswordCorrectAsync(string password)
-        {
-            if (string.IsNullOrEmpty(password) && Credentials.IsPasswordEmpty) return true; // No password set, and none provided
-            if (string.IsNullOrEmpty(password)) return false; // Password expected but none provided
-
-            Stream stream = null;
-            try
-            {
-                stream = await OpenZipStreamAsync(FileAccessMode.Read);
-                if (stream == null) return string.IsNullOrEmpty(password); // Cannot check if stream fails
-
-                return CheckAccess(stream, password, encoding);
-            }
-            catch
-            {
-                return false;
-            }
-            finally
-            {
-                stream?.Dispose(); // We opened it directly, so we manage it here.
-            }
-        }
-
 
         private sealed class AnsiZipFolderBasicProperties : BaseBasicProperties
         {
@@ -1163,7 +1050,7 @@ namespace Files.App.Utils.Storage
             // DateModified might be the only relevant field from ZipEntry.
             public override ulong Size => entry.IsDirectory ? 0 : (ulong)entry.Size; // Typically 0 for directories in zip
             public override DateTimeOffset DateModified => entry.DateTime > DateTime.MinValue ? new DateTimeOffset(entry.DateTime) : DateTimeOffset.MinValue;
-            public override DateTimeOffset DateCreated => entry.DateTime > DateTime.MinValue ? new DateTimeOffset(entry.DateTime) : DateTimeOffset.MinValue;
+            public override DateTimeOffset DateCreated => DateTimeOffset.MinValue;
         }
     }
 }
