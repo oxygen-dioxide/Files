@@ -117,8 +117,17 @@ namespace Files.App.Utils.Storage
 		public static IAsyncOperation<BaseStorageFolder> GetFolderFromPathAsync(string path)
 		{
 			return
-				AsyncInfo.Run(async (cancellationToken)
-					=> await ZipStorageFolder.FromPathAsync(path) ?? await FtpStorageFolder.FromPathAsync(path) ?? await ShellStorageFolder.FromPathAsync(path) ?? await SystemStorageFolder.FromPathAsync(path));
+				AsyncInfo.Run(async (cancellationToken) =>
+				{
+					if (path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+					{
+						return await AnsiZipStorageFolder.FromPathAsync(path) ?? await ZipStorageFolder.FromPathAsync(path);
+					}
+					else
+					{
+						return await ZipStorageFolder.FromPathAsync(path) ?? await FtpStorageFolder.FromPathAsync(path) ?? await ShellStorageFolder.FromPathAsync(path) ?? await SystemStorageFolder.FromPathAsync(path);
+					}
+				});
 		}
 
 		public abstract IAsyncOperation<IReadOnlyList<BaseStorageFolder>> GetFoldersAsync();
