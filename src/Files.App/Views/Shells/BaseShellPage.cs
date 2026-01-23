@@ -30,7 +30,7 @@ namespace Files.App.Views.Shells
 			DependencyProperty.Register(
 				"NavParams",
 				typeof(NavigationParams),
-				typeof(ModernShellPage),
+				typeof(BaseShellPage),
 				new PropertyMetadata(null));
 
 		public StorageHistoryHelpers StorageHistoryHelpers { get; }
@@ -155,7 +155,7 @@ namespace Files.App.Views.Shells
 
 		public virtual Task WhenIsCurrent() => _IsCurrentInstanceTCS.Task;
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public event EventHandler<TabBarItemParameter> ContentChanged;
 
@@ -171,7 +171,7 @@ namespace Files.App.Views.Shells
 
 			InitToolbarCommands();
 
-			DisplayFilesystemConsentDialogAsync();
+			_ = DisplayFilesystemConsentDialogAsync();
 
 			if (AppLanguageHelper.IsPreferredLanguageRtl)
 				FlowDirection = FlowDirection.RightToLeft;
@@ -239,16 +239,17 @@ namespace Files.App.Views.Shells
 					? headBranch.Name
 					: string.Empty;
 
+				var isGitFetchCanceled = false;
 				if (!_gitFetch.IsCompleted)
 				{
 					_gitFetchToken.Cancel();
-					await _gitFetch;
-					_gitFetchToken.TryReset();
+					_gitFetchToken = new CancellationTokenSource();
+					isGitFetchCanceled = true;
 				}
-				if (InstanceViewModel.IsGitRepository && !GitHelpers.IsExecutingGitAction)
+				if (InstanceViewModel.IsGitRepository && (!GitHelpers.IsExecutingGitAction || isGitFetchCanceled))
 				{
 					_gitFetch = Task.Run(
-						() => GitHelpers.FetchOrigin(InstanceViewModel.GitRepositoryPath),
+						() => GitHelpers.FetchOrigin(InstanceViewModel.GitRepositoryPath, _gitFetchToken.Token),
 						_gitFetchToken.Token);
 				}
 			}
@@ -664,7 +665,7 @@ namespace Files.App.Views.Shells
 		protected void InitToolbarCommands()
 		{
 			ToolbarViewModel.OpenNewWindowCommand = new AsyncRelayCommand(NavigationHelpers.LaunchNewWindowAsync);
-			ToolbarViewModel.CreateNewFileCommand = new RelayCommand<ShellNewEntry>(x => UIFilesystemHelpers.CreateFileFromDialogResultTypeAsync(AddItemDialogItemType.File, x, this));
+			ToolbarViewModel.CreateNewFileCommand = new RelayCommand<ShellNewEntry>(x => _ = UIFilesystemHelpers.CreateFileFromDialogResultTypeAsync(AddItemDialogItemType.File, x, this));
 			/*ToolbarViewModel.SelectZipEncodingCommand = new RelayCommand<Encoding>(x =>
 			{
 				//TODO

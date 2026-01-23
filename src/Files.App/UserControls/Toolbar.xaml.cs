@@ -127,5 +127,12 @@ namespace Files.App.UserControls
 			if (VisualTreeHelper.GetOpenPopupsForXamlRoot(MainWindow.Instance.Content.XamlRoot).Any())
 				args.Handled = true;
 		}
+
+		private void LayoutButton_Click(object sender, RoutedEventArgs e)
+		{
+			// Hide flyout after choosing a layout
+			// Check if LayoutFlyout is not null to handle cases where UI elements are unloaded via x:Load
+			LayoutFlyout?.Hide();
+		}
 	}
 }
