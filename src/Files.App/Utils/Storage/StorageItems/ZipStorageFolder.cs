@@ -73,6 +73,23 @@ namespace Files.App.Utils.Storage
 				|| (marker < path.Length && path[marker] is '\\' && !IO.Path.Exists(path));
 		}
 
+		public static bool IsAnsiZipPath(string path, bool includeRoot = true)
+		{
+			if (!FileExtensionHelpers.HasExtension(path, ".zip"))
+			{
+				return false;
+			}
+			var marker = path.IndexOf(".zip", StringComparison.OrdinalIgnoreCase);
+			if (marker is -1)
+			{
+				return false;
+			}
+			marker += 4;
+			// If IO.Path.Exists returns true, it is not a zip path but a normal directory path that contains ".zip".
+			return (marker == path.Length && includeRoot && !IO.Path.Exists(path + "\\"))
+				|| (marker < path.Length && path[marker] is '\\' && !IO.Path.Exists(path));
+		}
+
 		public async Task<long> GetUncompressedSize()
 		{
 			long uncompressedSize = 0;

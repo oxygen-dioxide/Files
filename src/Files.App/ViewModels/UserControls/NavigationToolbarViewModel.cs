@@ -245,6 +245,7 @@ namespace Files.App.ViewModels.UserControls
 		public ICommand? CreateNewFileCommand { get; set; }
 		public ICommand? Share { get; set; }
 		public ICommand? UpdateCommand { get; set; }
+		public ICommand? SelectZipEncodingCommand { get; set; }
 
 		// Constructor
 

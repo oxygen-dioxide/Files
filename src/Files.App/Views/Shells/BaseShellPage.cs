@@ -666,10 +666,12 @@ namespace Files.App.Views.Shells
 		{
 			ToolbarViewModel.OpenNewWindowCommand = new AsyncRelayCommand(NavigationHelpers.LaunchNewWindowAsync);
 			ToolbarViewModel.CreateNewFileCommand = new RelayCommand<ShellNewEntry>(x => _ = UIFilesystemHelpers.CreateFileFromDialogResultTypeAsync(AddItemDialogItemType.File, x, this));
-			/*ToolbarViewModel.SelectZipEncodingCommand = new RelayCommand<Encoding>(x =>
+			ToolbarViewModel.SelectZipEncodingCommand = new RelayCommand<Encoding>(x =>
 			{
+				var zipEncodings = UserSettingsService.GeneralSettingsService.ZipFileEncodingPreferences ?? [];
+				
 				//TODO
-			});*/
+			});
 			ToolbarViewModel.UpdateCommand = new AsyncRelayCommand(async () => await updateSettingsService.DownloadUpdatesAsync());
 		}
 

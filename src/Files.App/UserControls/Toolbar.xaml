@@ -491,6 +491,20 @@
 					</AppBarButton.Icon>
 				</AppBarButton>
 
+				<!-- Change Zip Encoding -->
+				<AppBarButton
+				x:Name="ZipEncodingAppBarButton"
+				x:Load="{x:Bind ViewModel.InstanceViewModel.IsAnsiZipFolder, Mode=OneWay, FallbackValue=False}"
+				Label="Encoding"
+				Style="{StaticResource ToolBarAppBarButtonFlyoutStyle}">
+					<AppBarButton.Flyout>
+						<MenuFlyout
+						x:Name="ZipEncodingList"
+						Opening="ZipEncodingList_Opening"
+						Placement="BottomEdgeAlignedLeft">
+						</MenuFlyout>
+					</AppBarButton.Flyout>
+				</AppBarButton>
 			</CommandBar.PrimaryCommands>
 		</CommandBar>
 

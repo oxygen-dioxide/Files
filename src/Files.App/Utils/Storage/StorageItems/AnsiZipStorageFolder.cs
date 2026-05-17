@@ -120,30 +120,11 @@ namespace Files.App.Utils.Storage
             return uncompressedSize;
         }
 
-        private static readonly ConcurrentDictionary<string, Task<bool>> defaultAppDict = new();
-        public static async Task<bool> CheckDefaultZipApp(string filePath)
-        {
-            Func<Task<bool>> queryFileAssoc = async () =>
-            {
-                var assoc = await Win32Helper.GetFileAssociationAsync(filePath); // Assuming Win32Helper exists
-                if (assoc is not null)
-                {
-                    return assoc == Package.Current.Id.FamilyName
-                           || assoc.EndsWith("Files.App\\Files.exe", StringComparison.OrdinalIgnoreCase)
-                           || assoc.Equals(IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe"), StringComparison.OrdinalIgnoreCase);
-                }
-                return true; // Default to true if no association found or to avoid blocking
-            };
-            var ext = IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-            if (string.IsNullOrEmpty(ext)) return true; // Cannot determine for extension-less files
-            return await defaultAppDict.GetOrAdd(ext, _ => queryFileAssoc());
-        }
-
         public static IAsyncOperation<BaseStorageFolder> FromPathAsync(string path, Encoding encoding = null)
         {
             return AsyncInfo.Run<BaseStorageFolder>(async (cancellationToken) =>
             {
-                if (!FileExtensionHelpers.IsBrowsableZipFile(path, out var ext))
+                if (!FileExtensionHelpers.IsBrowsableAnsiZipFile(path, out var ext))
                 {
                     return null;
                 }

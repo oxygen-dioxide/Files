@@ -73,7 +73,7 @@ namespace Files.App.Utils.Storage
 
         public static IAsyncOperation<BaseStorageFile> FromPathAsync(string path)
         {
-            if (!FileExtensionHelpers.IsBrowsableZipFile(path, out var ext))
+            if (!FileExtensionHelpers.IsBrowsableAnsiZipFile(path, out var ext))
             {
                 return Task.FromResult<BaseStorageFile>(null).AsAsyncOperation();
             }

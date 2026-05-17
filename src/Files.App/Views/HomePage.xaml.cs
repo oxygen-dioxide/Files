@@ -39,6 +39,7 @@ namespace Files.App.Views
 			AppInstance.InstanceViewModel.IsPageTypeCloudDrive = false;
 			AppInstance.InstanceViewModel.IsPageTypeFtp = false;
 			AppInstance.InstanceViewModel.IsPageTypeZipFolder = false;
+			AppInstance.InstanceViewModel.IsAnsiZipFolder = false;
 			AppInstance.InstanceViewModel.IsPageTypeLibrary = false;
 			AppInstance.InstanceViewModel.GitRepositoryPath = null;
 			AppInstance.InstanceViewModel.IsGitRepository = false;

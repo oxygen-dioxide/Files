@@ -150,17 +150,9 @@ namespace Files.App.Utils.Storage
 
 		public static IAsyncOperation<BaseStorageFile> GetFileFromPathAsync(string path)
 		{
-			return AsyncInfo.Run(async (cancellationToken) =>
-			{
-				if (path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-				{
-					return await AnsiZipStorageFile.FromPathAsync(path) ?? await ZipStorageFile.FromPathAsync(path);
-				}
-				else
-				{
-					return await ZipStorageFile.FromPathAsync(path) ?? await FtpStorageFile.FromPathAsync(path) ?? await ShellStorageFile.FromPathAsync(path) ?? await NativeStorageFile.FromPathAsync(path) ?? await SystemStorageFile.FromPathAsync(path);
-				}
-			});
+			return AsyncInfo.Run(async (cancellationToken)
+					=> await AnsiZipStorageFile.FromPathAsync(path) ?? await ZipStorageFile.FromPathAsync(path) ?? await FtpStorageFile.FromPathAsync(path) ?? await ShellStorageFile.FromPathAsync(path) ?? await NativeStorageFile.FromPathAsync(path) ?? await SystemStorageFile.FromPathAsync(path)
+			);
 		}
 
 		public async Task<string> ReadTextAsync(int maxLength = -1)

@@ -120,6 +120,22 @@ namespace Files.Shared.Helpers
 			return HasExtension(fileExtensionToCheck, ".zip", ".msix", ".appx", ".msixbundle", ".appxbundle", ".7z", ".rar", ".tar", ".mcpack", ".mcworld", ".mrpack", ".jar", ".gz", ".lzh");
 		}
 
+		public static bool IsBrowsableAnsiZipFile(string? filePath, out string? ext)
+		{
+			if (string.IsNullOrWhiteSpace(filePath))
+			{
+				ext = null;
+
+				return false;
+			}
+
+			// Only extensions we want to browse
+			ext = new[] { ".zip" }
+				.FirstOrDefault(x => filePath.Contains(x, StringComparison.OrdinalIgnoreCase));
+
+			return ext is not null;
+		}
+
 		public static bool IsBrowsableZipFile(string? filePath, out string? ext)
 		{
 			if (string.IsNullOrWhiteSpace(filePath))

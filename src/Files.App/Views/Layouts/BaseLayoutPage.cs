@@ -445,6 +445,7 @@ namespace Files.App.Views.Layouts
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeMtpDevice = workingDir.StartsWith("\\\\?\\", StringComparison.Ordinal);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeFtp = FtpHelpers.IsFtpPath(workingDir);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeZipFolder = ZipStorageFolder.IsZipPath(workingDir);
+				ParentShellPageInstance.InstanceViewModel.IsAnsiZipFolder = ZipStorageFolder.IsAnsiZipPath(workingDir);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeLibrary = LibraryManager.IsLibraryPath(workingDir);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeSearchResults = false;
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeReleaseNotes = false;
@@ -480,6 +481,7 @@ namespace Files.App.Views.Layouts
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeMtpDevice = workingDir.StartsWith("\\\\?\\", StringComparison.Ordinal);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeFtp = FtpHelpers.IsFtpPath(workingDir);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeZipFolder = ZipStorageFolder.IsZipPath(workingDir);
+				ParentShellPageInstance.InstanceViewModel.IsAnsiZipFolder = ZipStorageFolder.IsAnsiZipPath(workingDir);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeLibrary = LibraryManager.IsLibraryPath(workingDir);
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeSearchResults = true;
 				ParentShellPageInstance.InstanceViewModel.IsPageTypeReleaseNotes = false;

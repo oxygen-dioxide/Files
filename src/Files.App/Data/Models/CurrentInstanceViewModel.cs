@@ -136,6 +136,16 @@ namespace Files.App.Data.Models
 			}
 		}
 
+		private bool isAnsiZipFolder = false;
+		public bool IsAnsiZipFolder
+		{
+			get => isAnsiZipFolder;
+			set
+			{
+				SetProperty(ref isAnsiZipFolder, value);
+			}
+		}
+
 		private bool isPageTypeLibrary = false;
 		public bool IsPageTypeLibrary
 		{
