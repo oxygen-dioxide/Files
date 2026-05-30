@@ -53,6 +53,10 @@ namespace Files.App.Utils.Storage
 			=> this.backingFile = backingFile;
 		public ZipStorageFolder(string path, string containerPath, ArchiveFileInfo entry) : this(path, containerPath)
 			=> DateCreated = entry.CreationTime == DateTime.MinValue ? DateTimeOffset.MinValue : entry.CreationTime;
+
+		public ZipStorageFolder(string path, string containerPath, ZipEntry entry) : this(path, containerPath)
+			=> DateCreated = entry.DateTime == DateTime.MinValue ? DateTimeOffset.MinValue : entry.DateTime;
+
 		public ZipStorageFolder(BaseStorageFile backingFile)
 		{
 			ArgumentException.ThrowIfNullOrEmpty(backingFile.Path);
@@ -62,6 +66,9 @@ namespace Files.App.Utils.Storage
 			this.backingFile = backingFile;
 		}
 		public ZipStorageFolder(string path, string containerPath, ArchiveFileInfo entry, BaseStorageFile backingFile) : this(path, containerPath, entry)
+			=> this.backingFile = backingFile;
+
+		public ZipStorageFolder(string path, string containerPath, ZipEntry entry, BaseStorageFile backingFile) : this(path, containerPath, entry)
 			=> this.backingFile = backingFile;
 
 		public static bool IsZipPath(string path, bool includeRoot = true)
@@ -235,13 +242,13 @@ namespace Files.App.Utils.Storage
 						{
 							if (entry.IsDirectory)
 							{
-								var folder = new ZipStorageFolder(targetPath, containerPath, backingFile);
+								var folder = new ZipStorageFolder(targetPath, containerPath, entry, backingFile);
 								((IPasswordProtectedItem)folder).CopyFrom(this);
 								return folder;
 							}
 							else
 							{
-								var file = new ZipStorageFile(targetPath, containerPath, backingFile);
+								var file = new ZipStorageFile(targetPath, containerPath, entry, backingFile);
 								((IPasswordProtectedItem)file).CopyFrom(this);
 								return file;
 							}
@@ -353,14 +360,14 @@ namespace Files.App.Utils.Storage
 							var itemPath = System.IO.Path.Combine(Path, split[0]);
 							if (!items.Any(x => x.Path == itemPath))
 							{
-								var folder = new ZipStorageFolder(itemPath, containerPath, backingFile);
+								var folder = new ZipStorageFolder(itemPath, containerPath, entry, backingFile);
 								((IPasswordProtectedItem)folder).CopyFrom(this);
 								items.Add(folder);
 							}
 						}
 						else
 						{
-							var file = new ZipStorageFile(winPath, containerPath, backingFile);
+							var file = new ZipStorageFile(winPath, containerPath, entry, backingFile);
 							((IPasswordProtectedItem)file).CopyFrom(this);
 							items.Add(file);
 						}

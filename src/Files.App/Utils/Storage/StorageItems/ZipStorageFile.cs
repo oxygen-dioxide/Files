@@ -63,6 +63,12 @@ namespace Files.App.Utils.Storage
 		public ZipStorageFile(string path, string containerPath, ArchiveFileInfo entry, BaseStorageFile backingFile) : this(path, containerPath, entry)
 			=> this.backingFile = backingFile;
 
+		public ZipStorageFile(string path, string containerPath, ZipEntry entry) : this(path, containerPath)
+			=> DateCreated = entry.DateTime == DateTime.MinValue ? DateTimeOffset.MinValue : entry.DateTime;
+
+		public ZipStorageFile(string path, string containerPath, ZipEntry entry, BaseStorageFile backingFile) : this(path, containerPath, entry)
+			=> this.backingFile = backingFile;
+
 		public override IAsyncOperation<StorageFile> ToStorageFileAsync()
 			=> StorageFile.CreateStreamedFileAsync(Name, ZipDataStreamingHandler(Path), null);
 
