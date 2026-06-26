@@ -51,6 +51,8 @@ namespace Files.App.Utils.Storage
 
 		internal Encoding? CurrentEncoding { get; set; }
 
+		internal int EntryIndex { get; set; } = -1;
+
 		public Func<IPasswordProtectedItem, Task<StorageCredential>> PasswordRequestedCallback { get; set; }
 
 		public ZipStorageFile(string path, string containerPath)
@@ -170,23 +172,16 @@ namespace Files.App.Utils.Storage
 					if (!string.IsNullOrEmpty(Credentials.Password))
 						zipFile.Password = Credentials.Password;
 
-					var targetName = GetEntryRelativePath();
-
-					foreach (ZipEntry entry in zipFile)
+					var entry = GetEntryFromZip(zipFile);
+					if (entry is not null && entry.IsFile)
 					{
-						if (!entry.IsFile)
-							continue;
-
-						if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
+						var ms = new MemoryStream();
+						using (var zipStream = zipFile.GetInputStream(entry))
 						{
-							var ms = new MemoryStream();
-							using (var zipStream = zipFile.GetInputStream(entry))
-							{
-								zipStream.CopyTo(ms);
-							}
-							ms.Position = 0;
-							return new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
+							zipStream.CopyTo(ms);
 						}
+						ms.Position = 0;
+						return new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
 					}
 
 					return null;
@@ -250,24 +245,17 @@ namespace Files.App.Utils.Storage
 					if (!string.IsNullOrEmpty(Credentials.Password))
 						zipFile.Password = Credentials.Password;
 
-					var targetName = GetEntryRelativePath();
-
-					foreach (ZipEntry entry in zipFile)
+					var entry = GetEntryFromZip(zipFile);
+					if (entry is not null && entry.IsFile)
 					{
-						if (!entry.IsFile)
-							continue;
-
-						if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
+						var ms = new MemoryStream();
+						using (var zipStream = zipFile.GetInputStream(entry))
 						{
-							var ms = new MemoryStream();
-							using (var zipStream = zipFile.GetInputStream(entry))
-							{
-								zipStream.CopyTo(ms);
-							}
-							ms.Position = 0;
-							var nsStream = new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
-							return new StreamWithContentType(nsStream);
+							zipStream.CopyTo(ms);
 						}
+						ms.Position = 0;
+						var nsStream = new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
+						return new StreamWithContentType(nsStream);
 					}
 
 					return null;
@@ -326,23 +314,16 @@ namespace Files.App.Utils.Storage
 					if (!string.IsNullOrEmpty(Credentials.Password))
 						zipFile.Password = Credentials.Password;
 
-					var targetName = GetEntryRelativePath();
-
-					foreach (ZipEntry entry in zipFile)
+					var entry = GetEntryFromZip(zipFile);
+					if (entry is not null && entry.IsFile)
 					{
-						if (!entry.IsFile)
-							continue;
-
-						if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
+						var ms = new MemoryStream();
+						using (var zipStream = zipFile.GetInputStream(entry))
 						{
-							var ms = new MemoryStream();
-							using (var zipStream = zipFile.GetInputStream(entry))
-							{
-								zipStream.CopyTo(ms);
-							}
-							ms.Position = 0;
-							return new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
+							zipStream.CopyTo(ms);
 						}
+						ms.Position = 0;
+						return new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
 					}
 
 					return null;
@@ -403,6 +384,24 @@ namespace Files.App.Utils.Storage
 			}, ((IPasswordProtectedItem)this).RetryWithCredentialsAsync));
 		}
 
+		private ZipEntry? GetEntryFromZip(ZipFile zipFile)
+		{
+			if (EntryIndex >= 0 && EntryIndex < zipFile.Count)
+				return zipFile[EntryIndex];
+
+			var targetName = GetEntryRelativePath();
+			foreach (ZipEntry entry in zipFile)
+			{
+				if (!entry.IsFile)
+					continue;
+
+				if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
+					return entry;
+			}
+
+			return null;
+		}
+
 		private IAsyncOperation<BaseStorageFile> CopyWithEncodingAsync(IStorageFolder destinationFolder, string desiredNewName, NameCollisionOption option)
 		{
 			return (IAsyncOperation<BaseStorageFile>)AsyncInfo.Run(async (cancellationToken) => SafetyExtensions.Wrap<BaseStorageFile>(async () =>
@@ -412,36 +411,29 @@ namespace Files.App.Utils.Storage
 				if (!string.IsNullOrEmpty(Credentials.Password))
 					zipFile.Password = Credentials.Password;
 
-				var targetName = GetEntryRelativePath();
-
-				foreach (ZipEntry entry in zipFile)
+				var entry = GetEntryFromZip(zipFile);
+				if (entry is not null && entry.IsFile)
 				{
-					if (!entry.IsFile)
-						continue;
-
-					if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
+					var ms = new MemoryStream();
+					using (var zipStream = zipFile.GetInputStream(entry))
 					{
-						var ms = new MemoryStream();
-						using (var zipStream = zipFile.GetInputStream(entry))
-						{
-							zipStream.CopyTo(ms);
-						}
-						ms.Position = 0;
+						zipStream.CopyTo(ms);
+					}
+					ms.Position = 0;
 
-						var destFolder = destinationFolder.AsBaseStorageFolder();
-						if (destFolder is ICreateFileWithStream cwsf)
-						{
-							using var inStream = new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
-							return await cwsf.CreateFileAsync(inStream.AsStreamForRead(), desiredNewName, option.Convert());
-						}
-						else
-						{
-							var destFile = await destFolder.CreateFileAsync(desiredNewName, option.Convert());
-							await using var outStream = await destFile.OpenStreamForWriteAsync();
-							ms.Position = 0;
-							ms.CopyTo(outStream);
-							return destFile;
-						}
+					var destFolder = destinationFolder.AsBaseStorageFolder();
+					if (destFolder is ICreateFileWithStream cwsf)
+					{
+						using var inStream = new NonSeekableRandomAccessStreamForRead(ms, (ulong)entry.Size);
+						return await cwsf.CreateFileAsync(inStream.AsStreamForRead(), desiredNewName, option.Convert());
+					}
+					else
+					{
+						var destFile = await destFolder.CreateFileAsync(desiredNewName, option.Convert());
+						await using var outStream = await destFile.OpenStreamForWriteAsync();
+						ms.Position = 0;
+						ms.CopyTo(outStream);
+						return destFile;
 					}
 				}
 
@@ -484,22 +476,14 @@ namespace Files.App.Utils.Storage
 				if (!string.IsNullOrEmpty(Credentials.Password))
 					zipFile.Password = Credentials.Password;
 
-				var targetName = GetEntryRelativePath();
-
-				foreach (ZipEntry entry in zipFile)
+				var entry = GetEntryFromZip(zipFile);
+				if (entry is not null && entry.IsFile)
 				{
-					if (!entry.IsFile)
-						continue;
-
-					if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
+					using var hDestFile = fileToReplace.CreateSafeFileHandle(FileAccess.ReadWrite);
+					await using (var outStream = new FileStream(hDestFile, FileAccess.Write))
+					using (var zipStream = zipFile.GetInputStream(entry))
 					{
-						using var hDestFile = fileToReplace.CreateSafeFileHandle(FileAccess.ReadWrite);
-						await using (var outStream = new FileStream(hDestFile, FileAccess.Write))
-						using (var zipStream = zipFile.GetInputStream(entry))
-						{
-							zipStream.CopyTo(outStream);
-						}
-						return;
+						zipStream.CopyTo(outStream);
 					}
 				}
 			}, ((IPasswordProtectedItem)this).RetryWithCredentialsAsync));
@@ -690,16 +674,9 @@ namespace Files.App.Utils.Storage
 				if (!string.IsNullOrEmpty(Credentials.Password))
 					zipFile.Password = Credentials.Password;
 
-				var targetName = GetEntryRelativePath();
-
-				foreach (ZipEntry entry in zipFile)
-				{
-					if (!entry.IsFile)
-						continue;
-
-					if (string.Equals(entry.Name.Replace('\\', '/'), targetName, StringComparison.OrdinalIgnoreCase))
-						return new ZipFileBasicPropertiesWithEncoding(entry);
-				}
+				var entry = GetEntryFromZip(zipFile);
+				if (entry is not null && entry.IsFile)
+					return new ZipFileBasicPropertiesWithEncoding(entry);
 
 				return new BaseBasicProperties();
 			});
